@@ -30,6 +30,7 @@ class _NotesPageState extends State<NotesPage> {
                     decoration: BoxDecoration(
                       color: currentTheme['secondaryBackground'],
                     ),
+                    child: Center(child: Text('hello')),
                   ),
                 )
               ],

@@ -75,7 +75,7 @@ class _ResizeableSidebarState extends State<ResizeableSidebar> {
                             ? currentTheme['accent']
                             : Colors.transparent),
                     child: SizedBox(
-                      width: handleSize,
+                      width: hovering ? handleSize : 1,
                       height: MediaQuery.of(context).size.height,
                     ),
                   ),

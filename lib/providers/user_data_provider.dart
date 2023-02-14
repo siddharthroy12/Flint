@@ -3,22 +3,24 @@ import 'package:flutter/material.dart';
 class UserDataProvider extends ChangeNotifier {
   var notes = [];
   var openedNotes = [];
+  String? selectedNote = '';
+  int? selectedIndex = null;
 
-  void addNote() {
-    notes.add({'name': 'Unitled', 'content': ''});
-    notifyListeners();
-  }
-
-  void openNote(String name) {
-    // Only those who exist can by opened
-    if (notes.firstWhere((element) => element['name'] == name) != -1) {
-      openedNotes.add(name);
+  void openNote(String path) {
+    if (!openedNotes.contains(path)) {
+      openedNotes.add(path);
     }
     notifyListeners();
   }
 
-  void closeNote(String name) {
-    openedNotes.removeWhere((element) => element['name'] == name);
+  void selectNote(String note) {
+    selectedNote = note;
+    selectedIndex = openedNotes.indexOf(note);
+    notifyListeners();
+  }
+
+  void closeNote(String path) {
+    openedNotes.removeWhere((element) => element['name'] == path);
     notifyListeners();
   }
 }
