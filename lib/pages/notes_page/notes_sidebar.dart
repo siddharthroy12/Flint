@@ -36,33 +36,51 @@ class _NotesSidebarState extends State<NotesSidebar> {
                 future: _notes,
                 builder: (context, snapshot) {
                   if (snapshot.connectionState == ConnectionState.done) {
-                    return ListView.builder(
-                      itemCount: snapshot.data?.length,
-                      itemBuilder: (context, index) => Padding(
-                        padding: const EdgeInsets.only(left: 10, right: 5),
-                        child: TextButton(
-                          onPressed: () {
-                            userData.openNote(snapshot.data?[index].path ?? '');
-                          },
-                          style: ButtonStyle(
-                            overlayColor: MaterialStateProperty.resolveWith(
-                              (states) => currentTheme['highlightBackground'],
+                    return Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Padding(
+                            padding: EdgeInsets.all(8.0),
+                            child: Text(
+                              'Documents',
+                              textAlign: TextAlign.left,
                             ),
                           ),
-                          child: Align(
-                            alignment: Alignment.topLeft,
-                            child: Text(
-                              snapshot.data?[index].path
-                                      .split(Platform.pathSeparator)
-                                      .last ??
-                                  '',
-                              style: TextStyle(
-                                fontWeight: FontWeight.w400,
-                                color: currentTheme['onPrimaryBackground'],
+                          Expanded(
+                            child: ListView.builder(
+                              itemCount: snapshot.data?.length,
+                              itemBuilder: (context, index) => TextButton(
+                                onPressed: () {
+                                  userData.openNote(
+                                      snapshot.data?[index].path ?? '');
+                                },
+                                style: ButtonStyle(
+                                  overlayColor:
+                                      MaterialStateProperty.resolveWith(
+                                    (states) =>
+                                        currentTheme['highlightBackground'],
+                                  ),
+                                ),
+                                child: Align(
+                                  alignment: Alignment.topLeft,
+                                  child: Text(
+                                    snapshot.data?[index].path
+                                            .split(Platform.pathSeparator)
+                                            .last ??
+                                        '',
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.w400,
+                                      color:
+                                          currentTheme['onPrimaryBackground'],
+                                    ),
+                                  ),
+                                ),
                               ),
                             ),
                           ),
-                        ),
+                        ],
                       ),
                     );
                   } else {

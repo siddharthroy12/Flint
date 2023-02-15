@@ -11,7 +11,6 @@ class NotesActions extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    var userData = Provider.of<UserDataProvider>(context, listen: false);
     var currentTheme = Provider.of<ThemeProvider>(context).currentTheme;
     return Container(
       decoration: BoxDecoration(

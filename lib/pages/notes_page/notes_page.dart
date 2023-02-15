@@ -1,8 +1,10 @@
+import 'package:flint/pages/notes_page/note_editor.dart';
 import 'package:flutter/material.dart';
 import '../../layout.dart';
 import 'notes_sidebar.dart';
 import 'package:provider/provider.dart';
 import 'package:flint/providers/theme_provider.dart';
+import 'package:flint/providers/user_data_provider.dart';
 import 'notes_tabs.dart';
 
 class NotesPage extends StatefulWidget {
@@ -22,18 +24,26 @@ class _NotesPageState extends State<NotesPage> {
         children: [
           const NotesSidebar(),
           Expanded(
-            child: Column(
-              children: [
-                const NotesTab(),
-                Expanded(
-                  child: Container(
-                    decoration: BoxDecoration(
-                      color: currentTheme['secondaryBackground'],
-                    ),
-                    child: Center(child: Text('hello')),
-                  ),
-                )
-              ],
+            child: Consumer<UserDataProvider>(
+              builder: (context, userData, child) {
+                if (userData.selectedNote != null) {
+                  return Column(
+                    children: [
+                      const NotesTab(),
+                      Expanded(
+                        child: Container(
+                          decoration: BoxDecoration(
+                            color: currentTheme['secondaryBackground'],
+                          ),
+                          child: const NoteEditor(),
+                        ),
+                      )
+                    ],
+                  );
+                } else {
+                  return Container();
+                }
+              },
             ),
           )
         ],

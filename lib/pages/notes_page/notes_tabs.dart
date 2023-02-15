@@ -1,3 +1,4 @@
+import 'package:flutter/gestures.dart';
 import 'package:provider/provider.dart';
 import 'package:flint/providers/theme_provider.dart';
 import 'package:flint/providers/user_data_provider.dart';
@@ -33,10 +34,17 @@ class BottomCorner extends StatelessWidget {
   }
 }
 
-class NotesTab extends StatelessWidget {
+class NotesTab extends StatefulWidget {
   const NotesTab({
     super.key,
   });
+
+  @override
+  State<NotesTab> createState() => _NotesTabState();
+}
+
+class _NotesTabState extends State<NotesTab> {
+  final scrollController = ScrollController();
 
   @override
   Widget build(BuildContext context) {
@@ -45,41 +53,52 @@ class NotesTab extends StatelessWidget {
         padding: const EdgeInsets.only(top: 8.0),
         child: SizedBox(
           height: 38,
-          child: ListView.builder(
-            itemCount: userData.openedNotes.length,
-            scrollDirection: Axis.horizontal,
-            itemBuilder: (context, index) {
-              bool isSelected =
-                  userData.openedNotes[index] == userData.selectedNote;
-              bool isSelectedOnRight = userData.selectedIndex == index + 1;
-              bool isSelecetedOnLeft = userData.selectedIndex == index - 1;
-              bool isLast = index == userData.openedNotes.length - 1;
-              return Row(
-                children: [
-                  ...(index == 0 && isSelected
-                      ? [const BottomCorner(side: Side.left)]
-                      : [SizedBox(width: index == 0 ? 5 : 0)]),
-                  Tab(
-                    onClick: () {
-                      userData.selectNote(userData.openedNotes[index]);
-                    },
-                    onClose: () {},
-                    title: userData.openedNotes[index],
-                    isSelectedOnLeft: isSelecetedOnLeft,
-                    isSelectedOnRight: isSelectedOnRight,
-                    showBackground:
-                        userData.openedNotes[index] == userData.selectedNote,
-                  ),
-                  ...(isLast
-                      ? [
-                          PlusButton(
-                            showBottomCorner: isSelected,
-                          )
-                        ]
-                      : []),
-                ],
-              );
+          child: Listener(
+            onPointerSignal: (event) {
+              if (event is PointerScrollEvent) {
+                double offset = scrollController.offset + event.scrollDelta.dy;
+                offset =
+                    offset.clamp(0, scrollController.position.maxScrollExtent);
+                scrollController.jumpTo(offset);
+              }
             },
+            child: ListView.builder(
+              itemCount: userData.openedNotes.length,
+              scrollDirection: Axis.horizontal,
+              controller: scrollController,
+              itemBuilder: (context, index) {
+                bool isSelected =
+                    userData.openedNotes[index] == userData.selectedNote;
+                bool isSelectedOnRight = userData.selectedIndex == index + 1;
+                bool isSelecetedOnLeft = userData.selectedIndex == index - 1;
+                bool isLast = index == userData.openedNotes.length - 1;
+                return Row(
+                  children: [
+                    ...(index == 0 && isSelected
+                        ? [const BottomCorner(side: Side.left)]
+                        : [SizedBox(width: index == 0 ? 5 : 0)]),
+                    Tab(
+                      onClick: () {
+                        userData.selectNote(userData.openedNotes[index]);
+                      },
+                      onClose: () {},
+                      title: userData.openedNotes[index],
+                      isSelectedOnLeft: isSelecetedOnLeft,
+                      isSelectedOnRight: isSelectedOnRight,
+                      showBackground:
+                          userData.openedNotes[index] == userData.selectedNote,
+                    ),
+                    ...(isLast
+                        ? [
+                            PlusButton(
+                              showBottomCorner: isSelected,
+                            )
+                          ]
+                        : []),
+                  ],
+                );
+              },
+            ),
           ),
         ),
       ),
@@ -110,6 +129,7 @@ class Tab extends StatelessWidget {
     var currentTheme = Provider.of<ThemeProvider>(context).currentTheme;
     Widget leftSide;
     Widget rightSide;
+
     if (showBackground) {
       leftSide = const SizedBox(width: 5);
       rightSide = leftSide;

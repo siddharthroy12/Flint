@@ -1,14 +1,19 @@
 import 'package:flutter/material.dart';
+import 'dart:io';
 
 class UserDataProvider extends ChangeNotifier {
   var notes = [];
   var openedNotes = [];
-  String? selectedNote = '';
-  int? selectedIndex = null;
+  String? selectedNote;
+  File? selectedNoteFile;
+  int? selectedIndex;
 
   void openNote(String path) {
     if (!openedNotes.contains(path)) {
       openedNotes.add(path);
+    }
+    if (openedNotes.length == 1) {
+      selectedNote = path;
     }
     notifyListeners();
   }
