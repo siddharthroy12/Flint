@@ -91,7 +91,9 @@ class _NotesTabState extends State<NotesTab> {
                         },
                         title: userData.openedNotes[index].path
                             .split(Platform.pathSeparator)
-                            .last,
+                            .last
+                            .split('.')
+                            .first,
                         isSelectedOnLeft: isSelecetedOnLeft,
                         isSelectedOnRight: isSelectedOnRight,
                         showBackground: isSelected,
@@ -175,6 +177,10 @@ class Tab extends StatelessWidget {
               child: TextButton(
                 onPressed: onClick,
                 style: ButtonStyle(
+                    minimumSize: MaterialStateProperty.resolveWith(
+                        (states) => Size.zero),
+                    padding: MaterialStateProperty.resolveWith(
+                        (states) => const EdgeInsets.all(10)),
                     overlayColor: MaterialStateProperty.resolveWith((states) =>
                         showBackground
                             ? currentTheme['secondaryBackground']

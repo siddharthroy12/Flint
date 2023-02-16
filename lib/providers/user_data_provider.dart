@@ -37,8 +37,12 @@ class UserDataProvider extends ChangeNotifier {
 
   void closeNote(int index) {
     _openedNotes.removeAt(index);
-    if (index == selectedNoteIndex) {
+    if (index <= selectedNoteIndex) {
       _selectedNoteIndex--;
+    }
+
+    if (_selectedNoteIndex < 0) {
+      _selectedNoteIndex = 0;
     }
     notifyListeners();
   }
