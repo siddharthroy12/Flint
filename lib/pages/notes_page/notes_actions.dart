@@ -14,6 +14,7 @@ class NotesActions extends StatelessWidget {
     var currentTheme = Provider.of<ThemeProvider>(context).currentTheme;
     return Container(
       decoration: BoxDecoration(
+        color: currentTheme['topbarBackground'],
         border: Border(
           bottom: BorderSide(
             color: currentTheme['border'],

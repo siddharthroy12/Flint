@@ -26,7 +26,7 @@ class _NotesPageState extends State<NotesPage> {
           Expanded(
             child: Consumer<UserDataProvider>(
               builder: (context, userData, child) {
-                if (userData.selectedNote != null) {
+                if (userData.openedNotes.isNotEmpty) {
                   return Column(
                     children: [
                       const NotesTab(),

@@ -3,9 +3,9 @@ import 'package:provider/provider.dart';
 import 'package:flint/providers/theme_provider.dart';
 import 'package:flint/providers/user_data_provider.dart';
 import 'package:flutter/material.dart';
+import 'dart:io';
 
 // Draw bottom rounded corner on both side of the tab
-
 enum Side { left, right }
 
 class BottomCorner extends StatelessWidget {
@@ -22,7 +22,7 @@ class BottomCorner extends StatelessWidget {
       ),
       child: Container(
         decoration: BoxDecoration(
-          color: currentTheme['primaryBackground'],
+          color: currentTheme['topbarBackground'],
           borderRadius: BorderRadius.only(
             bottomRight: side == Side.left ? radius : Radius.zero,
             bottomLeft: side == Side.right ? radius : Radius.zero,
@@ -48,56 +48,65 @@ class _NotesTabState extends State<NotesTab> {
 
   @override
   Widget build(BuildContext context) {
+    var currentTheme = Provider.of<ThemeProvider>(context).currentTheme;
     return Consumer<UserDataProvider>(
-      builder: (context, userData, child) => Padding(
-        padding: const EdgeInsets.only(top: 8.0),
-        child: SizedBox(
-          height: 38,
-          child: Listener(
-            onPointerSignal: (event) {
-              if (event is PointerScrollEvent) {
-                double offset = scrollController.offset + event.scrollDelta.dy;
-                offset =
-                    offset.clamp(0, scrollController.position.maxScrollExtent);
-                scrollController.jumpTo(offset);
-              }
-            },
-            child: ListView.builder(
-              itemCount: userData.openedNotes.length,
-              scrollDirection: Axis.horizontal,
-              controller: scrollController,
-              itemBuilder: (context, index) {
-                bool isSelected =
-                    userData.openedNotes[index] == userData.selectedNote;
-                bool isSelectedOnRight = userData.selectedIndex == index + 1;
-                bool isSelecetedOnLeft = userData.selectedIndex == index - 1;
-                bool isLast = index == userData.openedNotes.length - 1;
-                return Row(
-                  children: [
-                    ...(index == 0 && isSelected
-                        ? [const BottomCorner(side: Side.left)]
-                        : [SizedBox(width: index == 0 ? 5 : 0)]),
-                    Tab(
-                      onClick: () {
-                        userData.selectNote(userData.openedNotes[index]);
-                      },
-                      onClose: () {},
-                      title: userData.openedNotes[index],
-                      isSelectedOnLeft: isSelecetedOnLeft,
-                      isSelectedOnRight: isSelectedOnRight,
-                      showBackground:
-                          userData.openedNotes[index] == userData.selectedNote,
-                    ),
-                    ...(isLast
-                        ? [
-                            PlusButton(
-                              showBottomCorner: isSelected,
-                            )
-                          ]
-                        : []),
-                  ],
-                );
+      builder: (context, userData, child) => Container(
+        color: currentTheme['topbarBackground'],
+        child: Padding(
+          padding: const EdgeInsets.only(top: 8.0),
+          child: SizedBox(
+            height: 38,
+            child: Listener(
+              onPointerSignal: (event) {
+                if (event is PointerScrollEvent) {
+                  double offset =
+                      scrollController.offset + event.scrollDelta.dy;
+                  offset = offset.clamp(
+                      0, scrollController.position.maxScrollExtent);
+                  scrollController.jumpTo(offset);
+                }
               },
+              child: ListView.builder(
+                itemCount: userData.openedNotes.length,
+                scrollDirection: Axis.horizontal,
+                controller: scrollController,
+                itemBuilder: (context, index) {
+                  bool isSelected = index == userData.selectedNoteIndex;
+                  bool isSelectedOnRight =
+                      userData.selectedNoteIndex == index + 1;
+                  bool isSelecetedOnLeft =
+                      userData.selectedNoteIndex == index - 1;
+                  bool isLast = index == userData.openedNotes.length - 1;
+                  return Row(
+                    children: [
+                      ...(index == 0 && isSelected
+                          ? [const BottomCorner(side: Side.left)]
+                          : [SizedBox(width: index == 0 ? 5 : 0)]),
+                      Tab(
+                        onClick: () {
+                          userData.selectedNoteIndex = index;
+                        },
+                        onClose: () {
+                          userData.closeNote(index);
+                        },
+                        title: userData.openedNotes[index].path
+                            .split(Platform.pathSeparator)
+                            .last,
+                        isSelectedOnLeft: isSelecetedOnLeft,
+                        isSelectedOnRight: isSelectedOnRight,
+                        showBackground: isSelected,
+                      ),
+                      ...(isLast
+                          ? [
+                              PlusButton(
+                                showBottomCorner: isSelected,
+                              )
+                            ]
+                          : []),
+                    ],
+                  );
+                },
+              ),
             ),
           ),
         ),
@@ -162,7 +171,7 @@ class Tab extends StatelessWidget {
           children: [
             ...(showBackground ? [const SizedBox(width: 5)] : [leftSide]),
             Padding(
-              padding: const EdgeInsets.symmetric(vertical: 8.0),
+              padding: const EdgeInsets.symmetric(vertical: 0.0),
               child: TextButton(
                 onPressed: onClick,
                 style: ButtonStyle(
@@ -183,7 +192,7 @@ class Tab extends StatelessWidget {
               width: 30,
               child: IconButton(
                 splashRadius: 15,
-                onPressed: () {},
+                onPressed: onClose,
                 padding: EdgeInsets.zero,
                 icon: const Icon(
                   Icons.close,

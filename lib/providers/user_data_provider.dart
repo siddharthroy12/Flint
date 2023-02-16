@@ -2,30 +2,44 @@ import 'package:flutter/material.dart';
 import 'dart:io';
 
 class UserDataProvider extends ChangeNotifier {
-  var notes = [];
-  var openedNotes = [];
-  String? selectedNote;
-  File? selectedNoteFile;
-  int? selectedIndex;
+  final List<File> _openedNotes = [];
+  var _selectedNoteIndex = 0;
 
   void openNote(String path) {
-    if (!openedNotes.contains(path)) {
-      openedNotes.add(path);
-    }
-    if (openedNotes.length == 1) {
-      selectedNote = path;
+    if (_openedNotes.indexWhere((file) => file.path == path) == -1) {
+      File file = File(path);
+      file.open(mode: FileMode.append);
+      _openedNotes.add(file);
     }
     notifyListeners();
   }
 
-  void selectNote(String note) {
-    selectedNote = note;
-    selectedIndex = openedNotes.indexOf(note);
+  List<File> get openedNotes {
+    return _openedNotes;
+  }
+
+  File? get selectedNote {
+    if (_openedNotes.isNotEmpty) {
+      return _openedNotes[_selectedNoteIndex];
+    } else {
+      return null;
+    }
+  }
+
+  set selectedNoteIndex(int index) {
+    _selectedNoteIndex = index;
     notifyListeners();
   }
 
-  void closeNote(String path) {
-    openedNotes.removeWhere((element) => element['name'] == path);
+  int get selectedNoteIndex {
+    return _selectedNoteIndex;
+  }
+
+  void closeNote(int index) {
+    _openedNotes.removeAt(index);
+    if (index == selectedNoteIndex) {
+      _selectedNoteIndex--;
+    }
     notifyListeners();
   }
 }
