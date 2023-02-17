@@ -5,6 +5,8 @@ import 'package:flint/providers/theme_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:flint/providers/user_data_provider.dart';
 import 'package:flutter/material.dart';
+import '../../common_widgets/resizeable_box.dart';
+import 'package:markdown_widget/markdown_widget.dart';
 
 class NoteEditor extends StatefulWidget {
   const NoteEditor({super.key});
@@ -102,20 +104,19 @@ class _NoteEditorState extends State<NoteEditor> {
   void _toggleItalic() {}
 
   double _getWidthOfText() {
-    int longestLine = 0;
+    String longestLine = '';
     _textEditingController.text.split("\n").forEach((element) {
-      if (element.length > longestLine) {
-        longestLine = element.length;
+      if (element.length > longestLine.length) {
+        longestLine = element;
       }
     });
 
     TextPainter textPainter = TextPainter();
-    textPainter.text = const TextSpan(text: "a", style: textStyle);
+    textPainter.text = TextSpan(text: longestLine, style: textStyle);
     textPainter.textDirection = TextDirection.ltr;
     textPainter.layout();
 
-    double width = longestLine * textPainter.width;
-    return width;
+    return textPainter.width + 5; // Some extra padding
   }
 
   @override
@@ -138,148 +139,141 @@ class _NoteEditorState extends State<NoteEditor> {
     const double iconSize = 20;
     const double iconSplashRadius = 20;
 
+    var tools = [
+      {'icon': Icons.visibility, 'onPressed': () {}},
+      {'icon': Icons.format_size, 'onPressed': _toggleHeading},
+      {'icon': Icons.format_bold, 'onPressed': () {}},
+      {'icon': Icons.format_italic, 'onPressed': () {}},
+      {'icon': Icons.format_underline, 'onPressed': () {}},
+      {'icon': Icons.format_quote, 'onPressed': () {}},
+      {'icon': Icons.code, 'onPressed': () {}},
+      {'icon': Icons.format_list_bulleted, 'onPressed': () {}},
+      {'icon': Icons.format_list_numbered, 'onPressed': () {}},
+      {'icon': Icons.checklist, 'onPressed': () {}},
+      {'icon': Icons.link, 'onPressed': () {}},
+      {'icon': Icons.functions, 'onPressed': () {}},
+      {'icon': Icons.image, 'onPressed': () {}},
+    ];
+
     return Material(
       color: Colors.transparent,
       child: Column(
         children: [
-          TextFieldTapRegion(
-            child: SizedBox(
-              child: Padding(
-                padding: const EdgeInsets.all(8),
-                child: Row(
-                  children: [
-                    IconButton(
-                      splashRadius: iconSplashRadius,
-                      icon: Icon(Icons.format_size,
-                          color: iconColor, size: iconSize),
-                      onPressed: _toggleHeading,
-                    ),
-                    IconButton(
-                      splashRadius: iconSplashRadius,
-                      icon: Icon(Icons.format_bold,
-                          color: iconColor, size: iconSize),
-                      onPressed: () {},
-                    ),
-                    IconButton(
-                      splashRadius: iconSplashRadius,
-                      icon: Icon(Icons.format_italic,
-                          color: iconColor, size: iconSize),
-                      onPressed: () {},
-                    ),
-                    IconButton(
-                      splashRadius: iconSplashRadius,
-                      icon: Icon(Icons.format_bold,
-                          color: iconColor, size: iconSize),
-                      onPressed: () {},
-                    ),
-                    IconButton(
-                      splashRadius: iconSplashRadius,
-                      icon: Icon(Icons.format_quote,
-                          color: iconColor, size: iconSize),
-                      onPressed: () {},
-                    ),
-                    IconButton(
-                      splashRadius: iconSplashRadius,
-                      icon: Icon(Icons.format_list_bulleted,
-                          color: iconColor, size: iconSize),
-                      onPressed: () {},
-                    ),
-                    IconButton(
-                      splashRadius: iconSplashRadius,
-                      icon: Icon(Icons.format_list_numbered,
-                          color: iconColor, size: iconSize),
-                      onPressed: () {},
-                    ),
-                    IconButton(
-                      splashRadius: iconSplashRadius,
-                      icon: Icon(Icons.link, color: iconColor, size: iconSize),
-                      onPressed: () {},
-                    ),
-                    IconButton(
-                      splashRadius: iconSplashRadius,
-                      icon: Icon(Icons.image, color: iconColor, size: iconSize),
-                      onPressed: () {},
-                    ),
-                  ],
+          Container(
+            decoration: BoxDecoration(
+              border: Border(
+                bottom: BorderSide(
+                  color: currentTheme['border'] as Color,
+                ),
+              ),
+            ),
+            child: TextFieldTapRegion(
+              child: SizedBox(
+                child: Padding(
+                  padding: const EdgeInsets.all(8),
+                  child: Row(
+                    children: tools
+                        .map<Widget>((tool) => IconButton(
+                              splashRadius: iconSplashRadius,
+                              icon: Icon(tool['icon'] as IconData,
+                                  color: iconColor, size: iconSize),
+                              onPressed: tool['onPressed'] as void Function(),
+                            ))
+                        .toList(),
+                  ),
                 ),
               ),
             ),
           ),
           Expanded(
-            child: Padding(
-              padding: const EdgeInsets.only(top: 8.0),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisAlignment: MainAxisAlignment.start,
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.only(left: 8.0),
-                    child: SizedBox(
-                      width: 30,
-                      height: MediaQuery.of(context).size.height,
-                      child: ScrollConfiguration(
-                        behavior: ScrollConfiguration.of(context)
-                            .copyWith(scrollbars: false),
-                        child: SingleChildScrollView(
-                          controller: _lineNumberScrollController,
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              for (var i = 0; i < _linesCount; i++)
-                                Text(
-                                  style: TextStyle(
-                                    color: currentTheme['onPrimaryBackground'],
-                                  ).merge(textStyle),
-                                  (i + 1).toString(),
+            child: Row(
+              children: [
+                ResizeableBox(
+                  initialWidth: 100,
+                  child: Padding(
+                    padding: const EdgeInsets.only(top: 8.0),
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.only(left: 8.0),
+                          child: SizedBox(
+                            width: 30,
+                            height: MediaQuery.of(context).size.height,
+                            child: ScrollConfiguration(
+                              behavior: ScrollConfiguration.of(context)
+                                  .copyWith(scrollbars: false),
+                              child: SingleChildScrollView(
+                                controller: _lineNumberScrollController,
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    for (var i = 0; i < _linesCount; i++)
+                                      Text(
+                                        style: TextStyle(
+                                          color: currentTheme[
+                                              'onPrimaryBackground'],
+                                        ).merge(textStyle),
+                                        (i + 1).toString(),
+                                      ),
+                                  ],
                                 ),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                  Expanded(
-                    child: LayoutBuilder(
-                      builder: (p0, p1) {
-                        final double textFieldWidth =
-                            max(p1.maxWidth, _getWidthOfText());
-                        return Scrollbar(
-                          controller: _verticalScrollController,
-                          child: SingleChildScrollView(
-                            controller: _verticalScrollController,
-                            scrollDirection: Axis.horizontal,
-                            child: ConstrainedBox(
-                              constraints:
-                                  BoxConstraints.expand(width: textFieldWidth),
-                              child: TextField(
-                                decoration: const InputDecoration(
-                                  border: InputBorder.none,
-                                  isDense: true,
-                                  contentPadding:
-                                      EdgeInsets.only(top: 4, bottom: 4),
-                                ),
-                                scrollController: _editorScrollController,
-                                style: textStyle,
-                                maxLines: 999,
-                                controller: _textEditingController,
-                                keyboardType: TextInputType.multiline,
-                                onChanged: (value) {
-                                  if (selectedNote != null) {
-                                    setState(() {
-                                      _linesCount =
-                                          '\n'.allMatches(value).length + 1;
-                                    });
-                                  }
-                                },
                               ),
                             ),
                           ),
-                        );
-                      },
+                        ),
+                        Expanded(
+                          child: LayoutBuilder(
+                            builder: (p0, p1) {
+                              final double textFieldWidth =
+                                  max(p1.maxWidth, _getWidthOfText());
+                              return Scrollbar(
+                                controller: _verticalScrollController,
+                                child: SingleChildScrollView(
+                                  controller: _verticalScrollController,
+                                  scrollDirection: Axis.horizontal,
+                                  child: ConstrainedBox(
+                                    constraints: BoxConstraints.expand(
+                                        width: textFieldWidth),
+                                    child: TextField(
+                                      decoration: const InputDecoration(
+                                        border: InputBorder.none,
+                                        isDense: true,
+                                        contentPadding:
+                                            EdgeInsets.only(top: 4, bottom: 4),
+                                      ),
+                                      scrollController: _editorScrollController,
+                                      style: textStyle,
+                                      maxLines: 999,
+                                      controller: _textEditingController,
+                                      keyboardType: TextInputType.multiline,
+                                      onChanged: (value) {
+                                        if (selectedNote != null) {
+                                          setState(() {
+                                            _linesCount =
+                                                '\n'.allMatches(value).length +
+                                                    1;
+                                          });
+                                        }
+                                      },
+                                    ),
+                                  ),
+                                ),
+                              );
+                            },
+                          ),
+                        ),
+                      ],
                     ),
                   ),
-                ],
-              ),
+                ),
+                Expanded(
+                    child: MarkdownWidget(
+                  data: _textEditingController.text,
+                  config: MarkdownConfig.darkConfig,
+                ))
+              ],
             ),
           ),
         ],

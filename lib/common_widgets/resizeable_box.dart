@@ -2,24 +2,25 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/theme_provider.dart';
 
-class ResizeableSidebar extends StatefulWidget {
+class ResizeableBox extends StatefulWidget {
   final double initialWidth;
   final Widget child;
   final ValueSetter<double>? onWidthChange;
-  const ResizeableSidebar(
+  const ResizeableBox(
       {super.key,
       required this.initialWidth,
       required this.child,
       this.onWidthChange});
 
   @override
-  State<ResizeableSidebar> createState() => _ResizeableSidebarState();
+  State<ResizeableBox> createState() => _ResizeableBoxState();
 }
 
-class _ResizeableSidebarState extends State<ResizeableSidebar> {
+class _ResizeableBoxState extends State<ResizeableBox> {
   final double handleSize = 5;
   double width = 0;
   bool hovering = false;
+  GlobalKey key = GlobalKey();
 
   @override
   void initState() {
@@ -33,6 +34,7 @@ class _ResizeableSidebarState extends State<ResizeableSidebar> {
 
     return GestureDetector(
       child: Container(
+        key: key,
         width: width,
         height: MediaQuery.of(context).size.height,
         decoration: BoxDecoration(
@@ -48,7 +50,10 @@ class _ResizeableSidebarState extends State<ResizeableSidebar> {
             GestureDetector(
               onHorizontalDragUpdate: (details) {
                 setState(() {
-                  width = details.globalPosition.dx - 47;
+                  RenderBox box =
+                      key.currentContext?.findRenderObject() as RenderBox;
+                  Offset position = box.localToGlobal(Offset.zero);
+                  width = details.globalPosition.dx - position.dx;
                   if (width < 170) {
                     width = 170;
                   } else {
