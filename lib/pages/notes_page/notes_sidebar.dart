@@ -68,7 +68,9 @@ class _NotesSidebarState extends State<NotesSidebar> {
                                   child: Text(
                                     snapshot.data?[index].path
                                             .split(Platform.pathSeparator)
-                                            .last ??
+                                            .last
+                                            .split(".")
+                                            .first ??
                                         '',
                                     style: TextStyle(
                                       fontWeight: FontWeight.w400,

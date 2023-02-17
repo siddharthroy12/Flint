@@ -10,7 +10,9 @@ class ThemeProvider extends ChangeNotifier {
       'onPrimaryBackground': const Color.fromARGB(255, 151, 151, 151),
       'highlightBackground': const Color.fromARGB(255, 41, 41, 41),
       'accent': const Color(0xFF8E7EF0),
-      'border': const Color(0xFF353535)
+      'border': const Color(0xFF353535),
+      'tooltipBackground': Colors.white,
+      'tooltipText': Colors.black
     }
   };
 

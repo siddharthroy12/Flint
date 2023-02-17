@@ -50,7 +50,7 @@ class _NotesTabState extends State<NotesTab> {
   Widget build(BuildContext context) {
     var currentTheme = Provider.of<ThemeProvider>(context).currentTheme;
     return Consumer<UserDataProvider>(
-      builder: (context, userData, child) => Container(
+      builder: (context, userData, child) => Material(
         color: currentTheme['topbarBackground'],
         child: Padding(
           padding: const EdgeInsets.only(top: 8.0),

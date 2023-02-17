@@ -27,20 +27,22 @@ class CustomIconButton extends StatelessWidget {
     Color iconHighlightColor = currentTheme['highlightBackground'];
     Color accentColor = currentTheme['accent'];
     Color secondaryBackgroundColor = currentTheme['secondaryBackground'];
+    Color backgroundColor = currentTheme['tooltipBackground'];
+    Color textColor = currentTheme['tooltipText'];
 
     return JustTheTooltip(
-      tailLength: 7.0,
-      tailBaseWidth: 10.0,
+      tailLength: 0,
+      tailBaseWidth: 0,
       margin: const EdgeInsets.all(8.0),
-      borderRadius: BorderRadius.circular(5.0),
+      borderRadius: BorderRadius.circular(2.0),
       offset: 5,
-      backgroundColor: secondaryBackgroundColor,
+      backgroundColor: backgroundColor,
       preferredDirection: preferredTooltipDirection,
       content: Padding(
         padding: const EdgeInsets.all(5.0),
         child: Text(
           tooltip,
-          style: const TextStyle(fontSize: 12),
+          style: TextStyle(fontSize: 12, color: textColor),
         ),
       ),
       child: SizedBox(

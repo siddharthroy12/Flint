@@ -4,6 +4,10 @@ class FadeRouteBuilder extends PageRouteBuilder {
   final Widget page;
   @override
   final RouteSettings settings;
+
+  @override
+  Duration get transitionDuration => const Duration(milliseconds: 100);
+
   FadeRouteBuilder({required this.page, required this.settings})
       : super(
           settings: settings,
