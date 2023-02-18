@@ -4,11 +4,20 @@ import '../providers/theme_provider.dart';
 
 enum Direction { left, right }
 
+class ResizeController {
+  void Function(double width) onChangeWidth = (_) {};
+  double width = 0;
+  void changeWidth(double width) {
+    onChangeWidth(width);
+  }
+}
+
 class ResizeableBox extends StatefulWidget {
   final double initialWidth;
   final double minimumWidth;
   final Direction direction;
   final Widget child;
+  final ResizeController? resizeController;
 
   final ValueSetter<double>? onWidthChange;
   const ResizeableBox({
@@ -18,6 +27,7 @@ class ResizeableBox extends StatefulWidget {
     this.onWidthChange,
     this.minimumWidth = 170,
     this.direction = Direction.right,
+    this.resizeController,
   });
 
   @override
@@ -25,49 +35,60 @@ class ResizeableBox extends StatefulWidget {
 }
 
 class _ResizeableBoxState extends State<ResizeableBox> {
-  final double handleSize = 5;
-  double width = 0;
-  bool hovering = false;
-  GlobalKey key = GlobalKey();
+  final double _handleSize = 5;
+  double _width = 0;
+  bool _hovering = false;
+  final GlobalKey _key = GlobalKey();
 
   @override
   void initState() {
-    width = widget.initialWidth;
+    _width = widget.initialWidth;
+    if (widget.resizeController != null) {
+      widget.resizeController?.width = _width;
+
+      widget.resizeController?.onChangeWidth = (double width) {
+        setState(() {
+          _width = width;
+        });
+        widget.resizeController?.width = width;
+      };
+    }
     super.initState();
   }
 
   @override
   Widget build(BuildContext context) {
     var currentTheme = Provider.of<ThemeProvider>(context).currentTheme;
+    widget.resizeController?.width = _width;
 
     var handle = GestureDetector(
       onHorizontalDragCancel: () {
         setState(() {
-          hovering = false;
+          _hovering = false;
         });
       },
       onHorizontalDragEnd: (_) {
         setState(() {
-          hovering = false;
+          _hovering = false;
         });
       },
       onHorizontalDragUpdate: (details) {
         setState(() {
-          RenderBox box = key.currentContext?.findRenderObject() as RenderBox;
+          RenderBox box = _key.currentContext?.findRenderObject() as RenderBox;
           Offset position = box.localToGlobal(Offset.zero);
           if (widget.direction == Direction.right) {
-            width = details.globalPosition.dx - position.dx;
+            _width = details.globalPosition.dx - position.dx;
           } else {
-            width =
+            _width =
                 MediaQuery.of(context).size.width - details.globalPosition.dx;
           }
-          if (width < widget.minimumWidth) {
-            width = widget.minimumWidth;
+          if (_width < widget.minimumWidth) {
+            _width = widget.minimumWidth;
           } else {
-            hovering = true;
+            _hovering = true;
           }
           if (widget.onWidthChange != null) {
-            widget.onWidthChange!(width);
+            widget.onWidthChange!(_width);
           }
         });
       },
@@ -75,7 +96,7 @@ class _ResizeableBoxState extends State<ResizeableBox> {
         onTap: () {}, // This is needed for onHover to work
         onHover: (val) {
           setState(() {
-            hovering = val;
+            _hovering = val;
           });
         },
         child: MouseRegion(
@@ -83,10 +104,10 @@ class _ResizeableBoxState extends State<ResizeableBox> {
           child: AnimatedContainer(
             duration: const Duration(milliseconds: 200),
             decoration: BoxDecoration(
-              color: hovering ? currentTheme['accent'] : Colors.transparent,
+              color: _hovering ? currentTheme['accent'] : Colors.transparent,
             ),
             child: SizedBox(
-              width: hovering ? handleSize : 1,
+              width: _hovering ? _handleSize : 1,
               height: MediaQuery.of(context).size.height,
             ),
           ),
@@ -96,8 +117,8 @@ class _ResizeableBoxState extends State<ResizeableBox> {
 
     return GestureDetector(
       child: Container(
-        key: key,
-        width: width,
+        key: _key,
+        width: _width,
         height: MediaQuery.of(context).size.height,
         decoration: BoxDecoration(
           border: Border(

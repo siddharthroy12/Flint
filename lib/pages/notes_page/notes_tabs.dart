@@ -5,35 +5,6 @@ import 'package:flint/providers/user_data_provider.dart';
 import 'package:flutter/material.dart';
 import 'dart:io';
 
-// Draw bottom rounded corner on both side of the tab
-enum Side { left, right }
-
-class BottomCorner extends StatelessWidget {
-  final Side side;
-  const BottomCorner({super.key, required this.side});
-
-  @override
-  Widget build(BuildContext context) {
-    var currentTheme = Provider.of<ThemeProvider>(context).currentTheme;
-    const radius = Radius.circular(10);
-    return Container(
-      decoration: BoxDecoration(
-        color: currentTheme['secondaryBackground'],
-      ),
-      child: Container(
-        decoration: BoxDecoration(
-          color: currentTheme['topbarBackground'],
-          borderRadius: BorderRadius.only(
-            bottomRight: side == Side.left ? radius : Radius.zero,
-            bottomLeft: side == Side.right ? radius : Radius.zero,
-          ),
-        ),
-        child: const SizedBox(width: 5, height: double.infinity),
-      ),
-    );
-  }
-}
-
 class NotesTab extends StatefulWidget {
   const NotesTab({
     super.key,
@@ -51,11 +22,13 @@ class _NotesTabState extends State<NotesTab> {
     var currentTheme = Provider.of<ThemeProvider>(context).currentTheme;
     return Consumer<UserDataProvider>(
       builder: (context, userData, child) => Material(
-        color: currentTheme['topbarBackground'],
-        child: Padding(
-          padding: const EdgeInsets.only(top: 8.0),
+        color: currentTheme['primaryBackground'],
+        child: Container(
+          decoration: BoxDecoration(
+              border: BorderDirectional(
+                  bottom: BorderSide(color: currentTheme['border']))),
           child: SizedBox(
-            height: 38,
+            height: 46,
             child: Listener(
               onPointerSignal: (event) {
                 if (event is PointerScrollEvent) {
@@ -72,16 +45,9 @@ class _NotesTabState extends State<NotesTab> {
                 controller: scrollController,
                 itemBuilder: (context, index) {
                   bool isSelected = index == userData.selectedNoteIndex;
-                  bool isSelectedOnRight =
-                      userData.selectedNoteIndex == index + 1;
-                  bool isSelecetedOnLeft =
-                      userData.selectedNoteIndex == index - 1;
-                  bool isLast = index == userData.openedNotes.length - 1;
                   return Row(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      ...(index == 0 && isSelected
-                          ? [const BottomCorner(side: Side.left)]
-                          : [SizedBox(width: index == 0 ? 5 : 0)]),
                       Tab(
                         onClick: () {
                           userData.selectedNoteIndex = index;
@@ -94,17 +60,8 @@ class _NotesTabState extends State<NotesTab> {
                             .last
                             .split('.')
                             .first,
-                        isSelectedOnLeft: isSelecetedOnLeft,
-                        isSelectedOnRight: isSelectedOnRight,
                         showBackground: isSelected,
                       ),
-                      ...(isLast
-                          ? [
-                              PlusButton(
-                                showBottomCorner: isSelected,
-                              )
-                            ]
-                          : []),
                     ],
                   );
                 },
@@ -122,92 +79,62 @@ class Tab extends StatelessWidget {
   final void Function() onClick;
   final String title;
   final bool showBackground;
-  final bool isSelectedOnLeft;
-  final bool isSelectedOnRight;
 
   const Tab({
     super.key,
     required this.onClick,
     required this.onClose,
     required this.title,
-    required this.isSelectedOnLeft,
-    required this.isSelectedOnRight,
     this.showBackground = true,
   });
 
   @override
   Widget build(BuildContext context) {
     var currentTheme = Provider.of<ThemeProvider>(context).currentTheme;
-    Widget leftSide;
-    Widget rightSide;
-
-    if (showBackground) {
-      leftSide = const SizedBox(width: 5);
-      rightSide = leftSide;
-    } else {
-      if (isSelectedOnLeft) {
-        leftSide = const BottomCorner(side: Side.right);
-      } else {
-        leftSide = const SizedBox(width: 5);
-      }
-      if (isSelectedOnRight) {
-        rightSide = const BottomCorner(side: Side.left);
-      } else {
-        rightSide = const SizedBox(width: 5);
-      }
-    }
-
     return Container(
       decoration: BoxDecoration(
         color: showBackground
             ? currentTheme['secondaryBackground']
             : Colors.transparent,
-        borderRadius: const BorderRadius.only(
-          topLeft: Radius.circular(5),
-          topRight: Radius.circular(5),
+        border: BorderDirectional(
+          bottom: BorderSide(
+            color: showBackground
+                ? currentTheme['accent'] as Color
+                : Colors.transparent,
+          ),
         ),
       ),
       child: Material(
         color: Colors.transparent,
-        child: Row(
-          children: [
-            ...(showBackground ? [const SizedBox(width: 5)] : [leftSide]),
-            Padding(
-              padding: const EdgeInsets.symmetric(vertical: 0.0),
-              child: TextButton(
-                onPressed: onClick,
-                style: ButtonStyle(
-                    minimumSize: MaterialStateProperty.resolveWith(
-                        (states) => Size.zero),
-                    padding: MaterialStateProperty.resolveWith(
-                        (states) => const EdgeInsets.all(10)),
-                    overlayColor: MaterialStateProperty.resolveWith((states) =>
-                        showBackground
-                            ? currentTheme['secondaryBackground']
-                            : currentTheme['highlightBackground'])),
-                child: Text(
+        child: InkWell(
+          onTap: onClick,
+          child: Padding(
+            padding: const EdgeInsets.only(left: 16.0, right: 8),
+            child: Row(
+              children: [
+                Text(
                   title,
                   style: const TextStyle(
                     color: Colors.white,
-                    fontWeight: FontWeight.w300,
+                    fontWeight: FontWeight.w400,
                   ),
                 ),
-              ),
-            ),
-            SizedBox(
-              width: 30,
-              child: IconButton(
-                splashRadius: 15,
-                onPressed: onClose,
-                padding: EdgeInsets.zero,
-                icon: const Icon(
-                  Icons.close,
-                  size: 15,
+                const SizedBox(width: 30),
+                SizedBox(
+                  width: 30,
+                  child: IconButton(
+                    splashRadius: 15,
+                    onPressed: onClose,
+                    padding: EdgeInsets.zero,
+                    icon: const Icon(
+                      Icons.close,
+                      size: 15,
+                    ),
+                  ),
                 ),
-              ),
+              ],
             ),
-            ...(showBackground ? [const SizedBox(width: 5)] : [rightSide]),
-          ],
+          ),
         ),
       ),
     );
@@ -215,22 +142,12 @@ class Tab extends StatelessWidget {
 }
 
 class PlusButton extends StatelessWidget {
-  final bool showBottomCorner;
-  const PlusButton({super.key, required this.showBottomCorner});
+  const PlusButton({super.key});
 
   @override
   Widget build(BuildContext context) {
     return Row(
       children: [
-        ...(showBottomCorner
-            ? [
-                const BottomCorner(side: Side.right),
-              ]
-            : [
-                const SizedBox(
-                  width: 5,
-                )
-              ]),
         SizedBox(
           width: 30,
           child: IconButton(

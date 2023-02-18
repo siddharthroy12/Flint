@@ -23,26 +23,24 @@ const textStyle = TextStyle(
 );
 
 class _NoteEditorState extends State<NoteEditor> {
-  late TextEditingController _textEditingController;
-  late ScrollController _editorScrollController;
-  late ScrollController _lineNumberScrollController;
-  late ScrollController _verticalScrollController;
+  final TextEditingController _textEditingController = TextEditingController();
+  final ScrollController _editorScrollController = ScrollController();
+  final ScrollController _lineNumberScrollController = ScrollController();
+  final ScrollController _verticalScrollController = ScrollController();
+  ResizeController resizeController = ResizeController();
   bool showPreview = false;
   File? _selectedNote;
+  double maxAvailableWidth = 0;
 
   int _linesCount = 0;
   @override
   void initState() {
     super.initState();
-    _textEditingController = TextEditingController();
     _textEditingController.addListener(() {
       if (_selectedNote != null) {
         _selectedNote?.writeAsString(_textEditingController.text);
       }
     });
-    _editorScrollController = ScrollController();
-    _lineNumberScrollController = ScrollController();
-    _verticalScrollController = ScrollController();
     _editorScrollController.addListener(() {
       _lineNumberScrollController.jumpTo(_editorScrollController.offset);
     });
@@ -137,7 +135,7 @@ class _NoteEditorState extends State<NoteEditor> {
     final currentTheme = context.watch<ThemeProvider>().currentTheme;
 
     final Color iconColor = currentTheme['onPrimaryBackground'];
-    const double iconSize = 20;
+    const double iconSize = 18;
     const double iconSplashRadius = 20;
 
     var tools = [
@@ -163,135 +161,146 @@ class _NoteEditorState extends State<NoteEditor> {
       {'icon': Icons.image, 'onPressed': () {}},
     ];
 
-    return Material(
-      color: Colors.transparent,
-      child: Column(
-        children: [
-          Container(
-            decoration: BoxDecoration(
-              border: Border(
-                bottom: BorderSide(
-                  color: currentTheme['border'] as Color,
+    return LayoutBuilder(builder: (p0, p1) {
+      if (p1.maxWidth != maxAvailableWidth) {
+        double difference = p1.maxWidth - maxAvailableWidth;
+        resizeController.changeWidth(resizeController.width + difference);
+        maxAvailableWidth = p1.maxWidth;
+      }
+      return Material(
+        color: Colors.transparent,
+        child: Column(
+          children: [
+            Container(
+              decoration: BoxDecoration(
+                border: Border(
+                  bottom: BorderSide(
+                    color: currentTheme['border'] as Color,
+                  ),
                 ),
               ),
-            ),
-            child: TextFieldTapRegion(
-              child: SizedBox(
-                child: Padding(
-                  padding: const EdgeInsets.all(8),
-                  child: Row(
-                    children: tools
-                        .map<Widget>(
-                          (tool) => IconButton(
-                            splashRadius: iconSplashRadius,
-                            icon: Icon(tool['icon'] as IconData,
-                                color: iconColor, size: iconSize),
-                            onPressed: tool['onPressed'] as void Function(),
-                          ),
-                        )
-                        .toList(),
+              child: TextFieldTapRegion(
+                child: SizedBox(
+                  child: Padding(
+                    padding: const EdgeInsets.all(3),
+                    child: Row(
+                      children: tools
+                          .map<Widget>(
+                            (tool) => IconButton(
+                              splashRadius: iconSplashRadius,
+                              icon: Icon(tool['icon'] as IconData,
+                                  color: iconColor, size: iconSize),
+                              onPressed: tool['onPressed'] as void Function(),
+                            ),
+                          )
+                          .toList(),
+                    ),
                   ),
                 ),
               ),
             ),
-          ),
-          Expanded(
-            child: Row(
-              children: [
-                Expanded(
-                  child: Padding(
-                    padding: const EdgeInsets.only(top: 8.0),
-                    child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      mainAxisAlignment: MainAxisAlignment.start,
-                      children: [
-                        Padding(
-                          padding: const EdgeInsets.only(left: 8.0),
-                          child: SizedBox(
-                            width: 30,
-                            height: MediaQuery.of(context).size.height,
-                            child: ScrollConfiguration(
-                              behavior: ScrollConfiguration.of(context)
-                                  .copyWith(scrollbars: false),
-                              child: SingleChildScrollView(
-                                controller: _lineNumberScrollController,
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    for (var i = 0; i < _linesCount; i++)
-                                      Text(
-                                        style: TextStyle(
-                                          color: currentTheme[
-                                              'onPrimaryBackground'],
-                                        ).merge(textStyle),
-                                        (i + 1).toString(),
-                                      ),
-                                  ],
+            Expanded(
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Padding(
+                      padding: const EdgeInsets.only(top: 8.0),
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisAlignment: MainAxisAlignment.start,
+                        children: [
+                          Padding(
+                            padding: const EdgeInsets.only(left: 8.0),
+                            child: SizedBox(
+                              width: 30,
+                              height: MediaQuery.of(context).size.height,
+                              child: ScrollConfiguration(
+                                behavior: ScrollConfiguration.of(context)
+                                    .copyWith(scrollbars: false),
+                                child: SingleChildScrollView(
+                                  controller: _lineNumberScrollController,
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      for (var i = 0; i < _linesCount; i++)
+                                        Text(
+                                          style: TextStyle(
+                                            color: currentTheme[
+                                                'onPrimaryBackground'],
+                                          ).merge(textStyle),
+                                          (i + 1).toString(),
+                                        ),
+                                    ],
+                                  ),
                                 ),
                               ),
                             ),
                           ),
-                        ),
-                        Expanded(
-                          child: LayoutBuilder(
-                            builder: (p0, p1) {
-                              final double textFieldWidth =
-                                  max(p1.maxWidth, _getWidthOfText());
-                              return Scrollbar(
-                                controller: _verticalScrollController,
-                                child: SingleChildScrollView(
+                          Expanded(
+                            child: LayoutBuilder(
+                              builder: (p0, p1) {
+                                final double textFieldWidth =
+                                    max(p1.maxWidth, _getWidthOfText());
+                                return Scrollbar(
                                   controller: _verticalScrollController,
-                                  scrollDirection: Axis.horizontal,
-                                  child: ConstrainedBox(
-                                    constraints: BoxConstraints.expand(
-                                        width: textFieldWidth),
-                                    child: TextField(
-                                      decoration: const InputDecoration(
-                                        border: InputBorder.none,
-                                        isDense: true,
-                                        contentPadding:
-                                            EdgeInsets.only(top: 4, bottom: 4),
+                                  child: SingleChildScrollView(
+                                    controller: _verticalScrollController,
+                                    scrollDirection: Axis.horizontal,
+                                    child: ConstrainedBox(
+                                      constraints: BoxConstraints.expand(
+                                          width: textFieldWidth),
+                                      child: TextField(
+                                        decoration: const InputDecoration(
+                                          border: InputBorder.none,
+                                          isDense: true,
+                                          contentPadding: EdgeInsets.only(
+                                              top: 4, bottom: 4),
+                                        ),
+                                        scrollController:
+                                            _editorScrollController,
+                                        style: textStyle,
+                                        maxLines: 999,
+                                        controller: _textEditingController,
+                                        keyboardType: TextInputType.multiline,
+                                        onChanged: (value) {
+                                          if (selectedNote != null) {
+                                            setState(() {
+                                              _linesCount = '\n'
+                                                      .allMatches(value)
+                                                      .length +
+                                                  1;
+                                            });
+                                          }
+                                        },
                                       ),
-                                      scrollController: _editorScrollController,
-                                      style: textStyle,
-                                      maxLines: 999,
-                                      controller: _textEditingController,
-                                      keyboardType: TextInputType.multiline,
-                                      onChanged: (value) {
-                                        if (selectedNote != null) {
-                                          setState(() {
-                                            _linesCount =
-                                                '\n'.allMatches(value).length +
-                                                    1;
-                                          });
-                                        }
-                                      },
                                     ),
                                   ),
-                                ),
-                              );
-                            },
+                                );
+                              },
+                            ),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
                   ),
-                ),
-                showPreview
-                    ? ResizeableBox(
-                        initialWidth: 300,
-                        minimumWidth: 300,
-                        direction: Direction.left,
-                        child: MarkdownWidget(
-                          data: _textEditingController.text,
-                          config: MarkdownConfig.darkConfig,
-                        ))
-                    : Container()
-              ],
+                  showPreview
+                      ? ResizeableBox(
+                          resizeController: resizeController,
+                          initialWidth: 300,
+                          minimumWidth: 300,
+                          direction: Direction.left,
+                          child: MarkdownWidget(
+                            data: _textEditingController.text,
+                            config: MarkdownConfig.darkConfig,
+                          ))
+                      : Container()
+                ],
+              ),
             ),
-          ),
-        ],
-      ),
-    );
+          ],
+        ),
+      );
+    });
   }
 }
