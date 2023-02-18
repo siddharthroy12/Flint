@@ -27,6 +27,7 @@ class _NoteEditorState extends State<NoteEditor> {
   late ScrollController _editorScrollController;
   late ScrollController _lineNumberScrollController;
   late ScrollController _verticalScrollController;
+  bool showPreview = false;
   File? _selectedNote;
 
   int _linesCount = 0;
@@ -140,7 +141,14 @@ class _NoteEditorState extends State<NoteEditor> {
     const double iconSplashRadius = 20;
 
     var tools = [
-      {'icon': Icons.visibility, 'onPressed': () {}},
+      {
+        'icon': Icons.visibility,
+        'onPressed': () {
+          setState(() {
+            showPreview = !showPreview;
+          });
+        }
+      },
       {'icon': Icons.format_size, 'onPressed': _toggleHeading},
       {'icon': Icons.format_bold, 'onPressed': () {}},
       {'icon': Icons.format_italic, 'onPressed': () {}},
@@ -173,12 +181,14 @@ class _NoteEditorState extends State<NoteEditor> {
                   padding: const EdgeInsets.all(8),
                   child: Row(
                     children: tools
-                        .map<Widget>((tool) => IconButton(
-                              splashRadius: iconSplashRadius,
-                              icon: Icon(tool['icon'] as IconData,
-                                  color: iconColor, size: iconSize),
-                              onPressed: tool['onPressed'] as void Function(),
-                            ))
+                        .map<Widget>(
+                          (tool) => IconButton(
+                            splashRadius: iconSplashRadius,
+                            icon: Icon(tool['icon'] as IconData,
+                                color: iconColor, size: iconSize),
+                            onPressed: tool['onPressed'] as void Function(),
+                          ),
+                        )
                         .toList(),
                   ),
                 ),
@@ -188,8 +198,7 @@ class _NoteEditorState extends State<NoteEditor> {
           Expanded(
             child: Row(
               children: [
-                ResizeableBox(
-                  initialWidth: 100,
+                Expanded(
                   child: Padding(
                     padding: const EdgeInsets.only(top: 8.0),
                     child: Row(
@@ -268,11 +277,16 @@ class _NoteEditorState extends State<NoteEditor> {
                     ),
                   ),
                 ),
-                Expanded(
-                    child: MarkdownWidget(
-                  data: _textEditingController.text,
-                  config: MarkdownConfig.darkConfig,
-                ))
+                showPreview
+                    ? ResizeableBox(
+                        initialWidth: 300,
+                        minimumWidth: 300,
+                        direction: Direction.left,
+                        child: MarkdownWidget(
+                          data: _textEditingController.text,
+                          config: MarkdownConfig.darkConfig,
+                        ))
+                    : Container()
               ],
             ),
           ),
