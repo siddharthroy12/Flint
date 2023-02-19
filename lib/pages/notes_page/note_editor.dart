@@ -8,14 +8,6 @@ import 'package:flutter/material.dart';
 import '../../common_widgets/resizeable_box.dart';
 import 'package:markdown_widget/markdown_widget.dart';
 
-// Text style that will be used inside markdown editor
-const textStyle = TextStyle(
-  fontFamily: 'RobotoMono',
-  fontSize: 14,
-  fontWeight: FontWeight.w300,
-  fontVariations: [FontVariation('wght', 300.0)],
-);
-
 // The whole package of stuffs for rich markdown editing experience
 class NoteEditor extends StatefulWidget {
   const NoteEditor({super.key});
@@ -123,113 +115,31 @@ class MarkdownCodeEditor extends StatefulWidget {
 }
 
 class _MarkdownCodeEditorState extends State<MarkdownCodeEditor> {
-  final ScrollController _lineNumberScrollController = ScrollController();
-  final ScrollController _verticalScrollController = ScrollController();
-  int _linesCount = 0;
-
   @override
   void initState() {
     super.initState();
-    widget.editorScrollController.addListener(() {
-      _lineNumberScrollController.jumpTo(widget.editorScrollController.offset);
-    });
-    widget.textEditingController.addListener(() {
-      setState(() {
-        _linesCount =
-            '\n'.allMatches(widget.textEditingController.text).length + 1;
-      });
-    });
-  }
-
-  double _getWidthOfText() {
-    String longestLine = '';
-    widget.textEditingController.text.split("\n").forEach((element) {
-      if (element.length > longestLine.length) {
-        longestLine = element;
-      }
-    });
-
-    TextPainter textPainter = TextPainter();
-    textPainter.text = TextSpan(text: longestLine, style: textStyle);
-    textPainter.textDirection = TextDirection.ltr;
-    textPainter.layout();
-
-    return textPainter.width + 5; // Some extra padding
   }
 
   @override
   Widget build(BuildContext context) {
-    final currentTheme = context.select<ThemeProvider, Map>(
-        (themeProvider) => themeProvider.currentTheme);
-
     return Padding(
-      padding: const EdgeInsets.only(top: 8.0),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisAlignment: MainAxisAlignment.start,
-        children: [
-          Padding(
-            padding: const EdgeInsets.only(left: 8.0),
-            child: SizedBox(
-              width: 30,
-              height: MediaQuery.of(context).size.height,
-              child: ScrollConfiguration(
-                behavior:
-                    ScrollConfiguration.of(context).copyWith(scrollbars: false),
-                child: SingleChildScrollView(
-                  controller: _lineNumberScrollController,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      for (var i = 0; i < _linesCount; i++)
-                        Text(
-                          style: TextStyle(
-                            color: currentTheme['onPrimaryBackground'],
-                          ).merge(textStyle),
-                          (i + 1).toString(),
-                        ),
-                    ],
-                  ),
-                ),
-              ),
-            ),
-          ),
-          Expanded(
-            child: LayoutBuilder(
-              builder: (p0, p1) {
-                final double textFieldWidth =
-                    max(p1.maxWidth, _getWidthOfText());
-                return Scrollbar(
-                  controller: _verticalScrollController,
-                  child: SingleChildScrollView(
-                    controller: _verticalScrollController,
-                    scrollDirection: Axis.horizontal,
-                    child: ConstrainedBox(
-                      constraints: BoxConstraints.expand(width: textFieldWidth),
-                      child: TextField(
-                        decoration: const InputDecoration(
-                          border: InputBorder.none,
-                          isDense: true,
-                          contentPadding: EdgeInsets.only(top: 4, bottom: 4),
-                        ),
-                        scrollController: widget.editorScrollController,
-                        style: textStyle,
-                        maxLines: 999,
-                        controller: widget.textEditingController,
-                        keyboardType: TextInputType.multiline,
-                        onChanged: (value) {
-                          // setState(() {
-                          //   _linesCount = '\n'.allMatches(value).length + 1;
-                          // });
-                        },
-                      ),
-                    ),
-                  ),
-                );
-              },
-            ),
-          ),
-        ],
+      padding: const EdgeInsets.only(top: 8.0, left: 8.0),
+      child: TextField(
+        decoration: const InputDecoration(
+          border: InputBorder.none,
+          isDense: true,
+          contentPadding: EdgeInsets.only(top: 4, bottom: 4),
+        ),
+        scrollController: widget.editorScrollController,
+        style: const TextStyle(
+          fontFamily: 'RobotoMono',
+          fontSize: 14,
+          fontWeight: FontWeight.w300,
+          fontVariations: [FontVariation('wght', 300.0)],
+        ),
+        maxLines: 999,
+        controller: widget.textEditingController,
+        keyboardType: TextInputType.multiline,
       ),
     );
   }
@@ -254,8 +164,8 @@ class _ToolsState extends State<Tools> {
   final double iconSplashRadius = 20;
   late List<Map<String, Object>> tools;
 
-  // Toggle heading numbers eg. (h1, h2, h3, ...)
-  void _toggleHeading() {
+  // Get the starting positing of the line on which the is cursor is located
+  int _getLineStartAtCursor() {
     int cursorPosition = widget.textEditingController.selection.base.offset;
     int startOfCurrentLine = cursorPosition;
 
@@ -293,6 +203,19 @@ class _ToolsState extends State<Tools> {
       // And we got the start of the current line
       startOfCurrentLine = pointer;
     }
+
+    return startOfCurrentLine;
+  }
+
+  // Get the ending positing of the line on which the is cursor is located
+  int _getLineEndAtCursor() {
+    return 0;
+  }
+
+  // Toggle heading numbers eg. (h1, h2, h3, ...)
+  void _toggleHeading() {
+    int cursorPosition = widget.textEditingController.selection.base.offset;
+    int startOfCurrentLine = _getLineStartAtCursor();
 
     // Calculate the size count of the #
     int count = 0;
@@ -352,19 +275,81 @@ class _ToolsState extends State<Tools> {
         TextPosition(offset: cursorPosition + cursorOffset));
   }
 
-  void _toggleBold() {}
+  void _toggleWrap(String wrap) {
+    int selectionStart = widget.textEditingController.selection.baseOffset;
+    int baseOffset = selectionStart;
+    int selectionEnd = widget.textEditingController.selection.extentOffset;
+    int extendOffset = selectionEnd;
 
-  void _toggleItalic() {}
+    String selectedText = widget.textEditingController.text
+        .substring(selectionStart, selectionEnd);
+
+    int sizeOfSelectedTextBeforeChange = selectedText.length;
+    if (selectedText.startsWith(wrap) || selectedText.endsWith(wrap)) {
+      if (selectedText.startsWith(wrap)) {
+        selectedText = selectedText.substring(wrap.length);
+        extendOffset -= wrap.length;
+      }
+      if (selectedText.endsWith(wrap)) {
+        selectedText =
+            selectedText.substring(0, selectedText.length - wrap.length);
+        extendOffset -= wrap.length;
+      }
+    } else {
+      String pattern = wrap.characters.map((e) => "\\$e").join();
+      selectedText = selectedText.replaceAll(RegExp(pattern), "");
+      selectedText = '$wrap$selectedText$wrap';
+
+      extendOffset += selectedText.length - sizeOfSelectedTextBeforeChange;
+    }
+
+    // text before the start of the line
+    var leftSide =
+        widget.textEditingController.text.substring(0, selectionStart);
+
+    // text after the end of the hashes
+    var rightSide = widget.textEditingController.text.substring(selectionEnd);
+
+    // Put both side with hashes
+    widget.textEditingController.text = '$leftSide$selectedText$rightSide';
+
+    widget.textEditingController.selection =
+        TextSelection(baseOffset: baseOffset, extentOffset: extendOffset);
+  }
+
+  void _toggleBlockQuote() {
+    int cursorPosition = widget.textEditingController.selection.base.offset;
+    int startOfCurrentLine = _getLineStartAtCursor();
+
+    if (widget.textEditingController.text.isNotEmpty) {
+      if (widget.textEditingController.text[startOfCurrentLine] == '>') {}
+    }
+  }
 
   @override
   void initState() {
     super.initState();
     tools = [
       {'icon': Icons.visibility, 'onPressed': widget.onToggleVisibility},
-      {'icon': Icons.format_size, 'onPressed': _toggleHeading},
-      {'icon': Icons.format_bold, 'onPressed': () {}},
-      {'icon': Icons.format_italic, 'onPressed': () {}},
-      {'icon': Icons.format_underline, 'onPressed': () {}},
+      {'icon': Icons.text_fields, 'onPressed': _toggleHeading},
+      {
+        'icon': Icons.format_bold,
+        'onPressed': () {
+          _toggleWrap("**");
+        }
+      },
+      {
+        'icon': Icons.format_italic,
+        'onPressed': () {
+          _toggleWrap("_");
+        }
+      },
+      {
+        'icon': Icons.format_strikethrough,
+        'onPressed': () {
+          _toggleWrap("~~");
+        }
+      },
       {'icon': Icons.format_quote, 'onPressed': () {}},
       {'icon': Icons.code, 'onPressed': () {}},
       {'icon': Icons.format_list_bulleted, 'onPressed': () {}},

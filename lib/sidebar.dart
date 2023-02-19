@@ -10,7 +10,7 @@ class Sidebar extends StatelessWidget {
   static const navigations = [
     {'icon': Icons.note_alt_outlined, 'path': '/notes', 'tooltip': 'Notes'},
     {
-      'icon': Icons.dashboard_outlined,
+      'icon': Icons.view_kanban_outlined,
       'path': '/kanban',
       'tooltip': 'Kanban Board'
     },
