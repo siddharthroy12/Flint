@@ -228,6 +228,7 @@ class _MarkdownCodeEditorState extends State<MarkdownCodeEditor> {
   }
 }
 
+// The tools to insert markdown elements inside text editor
 class Tools extends StatefulWidget {
   const Tools(
       {super.key,
@@ -246,56 +247,101 @@ class _ToolsState extends State<Tools> {
   final double iconSplashRadius = 20;
   late List<Map<String, Object>> tools;
 
+  // Toggle heading numbers eg. (h1, h2, h3, ...)
   void _toggleHeading() {
-    int cursorOffset = widget.textEditingController.selection.base.offset;
-    int pointer = cursorOffset;
-    int cursorOffsetFromStartOfLine = 0;
+    int cursorPosition = widget.textEditingController.selection.base.offset;
+    int startOfCurrentLine = cursorPosition;
 
-    // If the cursor at new line we need to move back so
-    // that we can find the previous new line
-    if (widget.textEditingController.text[cursorOffset] == '\n') {
-      pointer--;
-    }
+    // Calculate the postion of the starting of the line at which the cursor at
+    if (widget.textEditingController.text.isNotEmpty) {
+      int pointer = cursorPosition;
 
-    // Now find the previous new line
-    while (widget.textEditingController.text[pointer] != '\n' && pointer != 0) {
-      pointer--;
-      cursorOffsetFromStartOfLine++;
-    }
-
-    // Now move one step forward where the line start
-    if (pointer != 0) {
-      pointer++;
-    }
-    int startOfHash = pointer;
-
-    // Cound number of #
-    int countOfHashTag = 0;
-
-    while (widget.textEditingController.text[pointer] == '#') {
-      countOfHashTag++;
-      pointer++;
-    }
-
-    if (countOfHashTag < 7) {
-      // Increase hashses
-      widget.textEditingController.text =
-          '${widget.textEditingController.text.substring(0, pointer)}#${widget.textEditingController.text.substring(pointer)}';
-      // Move cursor forward
-      widget.textEditingController.selection =
-          TextSelection.fromPosition(TextPosition(offset: cursorOffset + 1));
-    } else {
-      // Remove all the hashses
-      widget.textEditingController.text =
-          '${widget.textEditingController.text.substring(0, startOfHash)}${widget.textEditingController.text.substring(pointer)}';
-      // Move cursor backward
-      int stepsToGoBack = countOfHashTag;
-      if (stepsToGoBack > cursorOffsetFromStartOfLine) {
-        stepsToGoBack = cursorOffsetFromStartOfLine - 1;
+      // If the pointer at the end of the text then move the
+      // pointer back otherwise it'll throw range error
+      // because offset is outside the range
+      if (pointer == widget.textEditingController.text.length) {
+        pointer--;
       }
-      widget.textEditingController.selection = TextSelection.fromPosition(
-          TextPosition(offset: cursorOffset - stepsToGoBack));
+
+      // If pointer is on a new line or at the end of text
+      // then move it backword so that we can get previous new line
+      if (pointer != 0) {
+        if (widget.textEditingController.text[pointer] == '\n' &&
+            pointer != widget.textEditingController.text.length - 1) {
+          pointer--;
+        }
+      }
+
+      // Get the previous new line
+      while (
+          pointer != 0 && widget.textEditingController.text[pointer] != '\n') {
+        pointer--;
+      }
+
+      // If pointer at start then move forward
+      // Idk why I'm doing this
+      if (pointer != 0) {
+        pointer++;
+      }
+      // And we got the start of the current line
+      startOfCurrentLine = pointer;
     }
+
+    // Calculate the size count of the #
+    int count = 0;
+    int endOfHash = 0;
+    int cursorOffset = 1;
+
+    // Count the hash and get the end of the hash
+    if (widget.textEditingController.text.isNotEmpty) {
+      int pointer = startOfCurrentLine;
+      while (pointer != widget.textEditingController.text.length &&
+          widget.textEditingController.text[pointer] == "#") {
+        count++;
+        pointer++;
+      }
+      endOfHash = pointer;
+    }
+
+    // Check if it has a space after the hash
+    bool hasSpaceAfterHash =
+        (endOfHash != widget.textEditingController.text.length &&
+            widget.textEditingController.text[endOfHash] == ' ');
+
+    // If count is less than 6 then increase it otherwise make it 0
+    if (count > 6) {
+      // To remove the space after hash after removing all hashes
+      if (hasSpaceAfterHash) {
+        endOfHash++;
+        count++;
+      }
+      int cursorDistanceFromStartOfLine = (cursorPosition - startOfCurrentLine);
+      // Move the cursor back but don't go to the previous line
+      cursorOffset = -min(count, cursorDistanceFromStartOfLine);
+      count = 0;
+    } else {
+      count++;
+      if (!hasSpaceAfterHash) {
+        cursorOffset++;
+      }
+    }
+
+    // text before the start of the line
+    var leftSide =
+        widget.textEditingController.text.substring(0, startOfCurrentLine);
+
+    var hashes = '#' * (count);
+
+    // text after the end of the hashes
+    var rightSide = widget.textEditingController.text.substring(endOfHash);
+
+    // Put both side with hashes
+    widget.textEditingController.text =
+        '$leftSide$hashes${hasSpaceAfterHash ? "" : ' '}$rightSide';
+
+    // Move cursor forward
+    widget.textEditingController.selection = TextSelection.fromPosition(
+        TextPosition(offset: cursorPosition + cursorOffset));
   }
 
   void _toggleBold() {}
