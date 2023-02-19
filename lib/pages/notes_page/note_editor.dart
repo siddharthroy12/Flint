@@ -5,7 +5,6 @@ import 'package:flint/providers/theme_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:flint/providers/user_data_provider.dart';
 import 'package:flutter/material.dart';
-import '../../common_widgets/resizeable_box.dart';
 import 'package:markdown_widget/markdown_widget.dart';
 
 // The whole package of stuffs for rich markdown editing experience
@@ -19,7 +18,6 @@ class NoteEditor extends StatefulWidget {
 class _NoteEditorState extends State<NoteEditor> {
   final TextEditingController _textEditingController = TextEditingController();
   final ScrollController _editorScrollController = ScrollController();
-  ResizeController resizeController = ResizeController();
   // Show the live markdown preview
   bool showPreview = false;
   // The file we are saving in
@@ -39,6 +37,8 @@ class _NoteEditorState extends State<NoteEditor> {
 
   @override
   Widget build(BuildContext context) {
+    var currentTheme = Provider.of<ThemeProvider>(context).currentTheme;
+
     final selectedNote =
         context.select<UserDataProvider, File?>((value) => value.selectedNote);
     // Whenver the selected note change update the text inside editor
@@ -51,13 +51,7 @@ class _NoteEditorState extends State<NoteEditor> {
       _selectedNote = selectedNote;
     }
 
-    return LayoutBuilder(builder: (p0, p1) {
-      // Resize the resizeable preview if this editor's width change
-      if (p1.maxWidth != maxAvailableWidth) {
-        double difference = p1.maxWidth - maxAvailableWidth;
-        resizeController.width = resizeController.width + difference;
-        maxAvailableWidth = p1.maxWidth;
-      }
+    return LayoutBuilder(builder: (p0, constraints) {
       return Material(
         color: Colors.transparent,
         child: Column(
@@ -80,15 +74,17 @@ class _NoteEditorState extends State<NoteEditor> {
                     ),
                   ),
                   showPreview
-                      ? ResizeableBox(
-                          resizeController: resizeController,
-                          initialWidth: 300,
-                          minimumWidth: 300,
-                          direction: Direction.left,
+                      ? Expanded(
+                          child: Container(
+                          decoration: BoxDecoration(
+                              border: BorderDirectional(
+                            start: BorderSide(color: currentTheme['border']),
+                          )),
                           child: MarkdownWidget(
                             data: _textEditingController.text,
                             config: MarkdownConfig.darkConfig,
-                          ))
+                          ),
+                        ))
                       : Container()
                 ],
               ),
@@ -330,7 +326,7 @@ class _ToolsState extends State<Tools> {
   void initState() {
     super.initState();
     tools = [
-      {'icon': Icons.visibility, 'onPressed': widget.onToggleVisibility},
+      {'icon': Icons.vertical_split, 'onPressed': widget.onToggleVisibility},
       {'icon': Icons.text_fields, 'onPressed': _toggleHeading},
       {
         'icon': Icons.format_bold,
