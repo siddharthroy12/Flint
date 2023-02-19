@@ -1,14 +1,20 @@
 import 'package:just_the_tooltip/just_the_tooltip.dart';
-
 import '../providers/theme_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+// This widget will be used on sidebar and various other places
 class CustomIconButton extends StatelessWidget {
+  // Icon to should shown
   final IconData icon;
+  // This will appear when it is hovered by mouse
   final String tooltip;
+  // Direction where toolip will be shown
   final AxisDirection preferredTooltipDirection;
+  // This callback function will be called when the icon gets clicked
   final void Function() onClick;
+  // If this is true it'll show a light background, I'm using this to show
+  // if the button is active or not
   final bool? highlighted;
 
   const CustomIconButton({
@@ -26,7 +32,6 @@ class CustomIconButton extends StatelessWidget {
     Color iconColor = currentTheme['onPrimaryBackground'];
     Color iconHighlightColor = currentTheme['highlightBackground'];
     Color accentColor = currentTheme['accent'];
-    Color secondaryBackgroundColor = currentTheme['secondaryBackground'];
     Color backgroundColor = currentTheme['tooltipBackground'];
     Color textColor = currentTheme['tooltipText'];
 

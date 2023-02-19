@@ -4,6 +4,7 @@ import 'package:flint/providers/theme_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+// The action buttons on the top of the tree view on notes
 class NotesActions extends StatelessWidget {
   const NotesActions({
     super.key,

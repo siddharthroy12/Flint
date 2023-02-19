@@ -7,6 +7,7 @@ import 'package:flint/providers/theme_provider.dart';
 import 'package:flint/providers/user_data_provider.dart';
 import 'notes_tabs.dart';
 
+// The notes page of the app
 class NotesPage extends StatefulWidget {
   const NotesPage({super.key});
 

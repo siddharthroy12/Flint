@@ -44,6 +44,7 @@ class MyApp extends StatelessWidget {
             default:
               page = const NotFoundPage();
           }
+          // Page chaning animation
           return FadeRouteBuilder(page: page, settings: settings);
         },
       ),

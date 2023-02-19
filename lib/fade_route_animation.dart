@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+// This is used for transition animation between pages
 class FadeRouteBuilder extends PageRouteBuilder {
   final Widget page;
   @override

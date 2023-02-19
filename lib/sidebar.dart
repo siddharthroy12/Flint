@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import './providers/theme_provider.dart';
 
+// The navigation sidebar
 class Sidebar extends StatelessWidget {
   const Sidebar({super.key});
 
@@ -19,6 +20,7 @@ class Sidebar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     var currentTheme = Provider.of<ThemeProvider>(context).currentTheme;
+    // Get the name of the current route to highlight the correct button
     String currentRoute = ModalRoute.of(context)?.settings.name ?? '';
 
     return Container(

@@ -3,6 +3,7 @@ import './sidebar.dart';
 import 'package:provider/provider.dart';
 import './providers/theme_provider.dart';
 
+// The layout is wrapped by every page
 class Layout extends StatelessWidget {
   final Widget child;
   const Layout({super.key, required this.child});

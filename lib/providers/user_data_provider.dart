@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'dart:io';
 
+// Global state for managing user's notes and settings
 class UserDataProvider extends ChangeNotifier {
   final List<File> _openedNotes = [];
   var _selectedNoteIndex = 0;

@@ -7,6 +7,7 @@ import '../../common_widgets/resizeable_box.dart';
 import 'notes_actions.dart';
 import 'package:flint/lib/filesystem.dart';
 
+// The treeview on notes and action buttons
 class NotesSidebar extends StatefulWidget {
   const NotesSidebar({super.key});
 
@@ -15,6 +16,7 @@ class NotesSidebar extends StatefulWidget {
 }
 
 class _NotesSidebarState extends State<NotesSidebar> {
+  // The Directory where notes are stored
   late Future<List<FileSystemEntity>> _notes;
   @override
   void initState() {
@@ -35,6 +37,7 @@ class _NotesSidebarState extends State<NotesSidebar> {
               child: FutureBuilder(
                 future: _notes,
                 builder: (context, snapshot) {
+                  // Wait for the list of files to load
                   if (snapshot.connectionState == ConnectionState.done) {
                     return Padding(
                       padding: const EdgeInsets.all(8.0),
@@ -66,6 +69,8 @@ class _NotesSidebarState extends State<NotesSidebar> {
                                 child: Align(
                                   alignment: Alignment.topLeft,
                                   child: Text(
+                                    // Only show the filename
+                                    // and without the extension
                                     snapshot.data?[index].path
                                             .split(Platform.pathSeparator)
                                             .last

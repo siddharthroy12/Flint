@@ -5,6 +5,7 @@ import 'package:flint/providers/user_data_provider.dart';
 import 'package:flutter/material.dart';
 import 'dart:io';
 
+// The tab bar on top of the editor
 class NotesTab extends StatefulWidget {
   const NotesTab({
     super.key,
@@ -15,6 +16,7 @@ class NotesTab extends StatefulWidget {
 }
 
 class _NotesTabState extends State<NotesTab> {
+  // This is needed to make this scrollable by using mouse scroll
   final scrollController = ScrollController();
 
   @override
@@ -30,6 +32,7 @@ class _NotesTabState extends State<NotesTab> {
           child: SizedBox(
             height: 46,
             child: Listener(
+              // Scroll the tabs when mouse is scrolled
               onPointerSignal: (event) {
                 if (event is PointerScrollEvent) {
                   double offset =
@@ -44,6 +47,7 @@ class _NotesTabState extends State<NotesTab> {
                 scrollDirection: Axis.horizontal,
                 controller: scrollController,
                 itemBuilder: (context, index) {
+                  // If it's selected it'll show a light background
                   bool isSelected = index == userData.selectedNoteIndex;
                   return Row(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -55,6 +59,8 @@ class _NotesTabState extends State<NotesTab> {
                         onClose: () {
                           userData.closeNote(index);
                         },
+                        // Extract the name of the file from path
+                        // without extension
                         title: userData.openedNotes[index].path
                             .split(Platform.pathSeparator)
                             .last
@@ -74,6 +80,7 @@ class _NotesTabState extends State<NotesTab> {
   }
 }
 
+// A tab inside the notes tab
 class Tab extends StatelessWidget {
   final void Function() onClose;
   final void Function() onClick;
@@ -141,6 +148,7 @@ class Tab extends StatelessWidget {
   }
 }
 
+// The plus button at the end of list of tabs
 class PlusButton extends StatelessWidget {
   const PlusButton({super.key});
 

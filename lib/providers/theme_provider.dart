@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+// A global state for managing themes
 class ThemeProvider extends ChangeNotifier {
   var _currentTheme = 'dark';
   static var themeList = {
