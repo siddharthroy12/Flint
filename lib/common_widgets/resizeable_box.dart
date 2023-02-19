@@ -8,14 +8,16 @@ enum Direction { left, right }
 class ResizeController {
   // Callback function that will be set by the ResizeableBox
   // This will get called whenever the width is set from this controller
-  void Function(double width) onChangeWidth = (_) {};
+  void Function(double width)? onChangeWidth;
   // The width of the ResizeableBox
   double _width = 0;
 
   // Set the width of ResizeableBox
   set width(double w) {
     _width = w;
-    onChangeWidth(w);
+    if (onChangeWidth != null) {
+      onChangeWidth!(w);
+    }
   }
 
   // Get width of ResizeableBox
@@ -82,6 +84,13 @@ class _ResizeableBoxState extends State<ResizeableBox> {
       };
     }
     super.initState();
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+    // Properly remove the callback to prevent memory leak
+    widget.resizeController?.onChangeWidth = null;
   }
 
   @override

@@ -28,7 +28,9 @@ class _NoteEditorState extends State<NoteEditor> {
   final TextEditingController _textEditingController = TextEditingController();
   final ScrollController _editorScrollController = ScrollController();
   ResizeController resizeController = ResizeController();
+  // Show the live markdown preview
   bool showPreview = false;
+  // The file we are saving in
   File? _selectedNote;
   double maxAvailableWidth = 0;
 
@@ -37,6 +39,7 @@ class _NoteEditorState extends State<NoteEditor> {
     super.initState();
     _textEditingController.addListener(() {
       if (_selectedNote != null) {
+        // Save editor's text to the file whenever it changes
         _selectedNote?.writeAsString(_textEditingController.text);
       }
     });
@@ -46,6 +49,8 @@ class _NoteEditorState extends State<NoteEditor> {
   Widget build(BuildContext context) {
     final selectedNote =
         context.select<UserDataProvider, File?>((value) => value.selectedNote);
+    // Whenver the selected note change update the text inside editor
+    // and jump to the top of the text
     if (selectedNote != _selectedNote && selectedNote != null) {
       selectedNote.readAsString().then((value) {
         _textEditingController.text = value;
@@ -55,6 +60,7 @@ class _NoteEditorState extends State<NoteEditor> {
     }
 
     return LayoutBuilder(builder: (p0, p1) {
+      // Resize the resizeable preview if this editor's width change
       if (p1.maxWidth != maxAvailableWidth) {
         double difference = p1.maxWidth - maxAvailableWidth;
         resizeController.width = resizeController.width + difference;
@@ -102,6 +108,7 @@ class _NoteEditorState extends State<NoteEditor> {
   }
 }
 
+// The cool markdown editor
 class MarkdownCodeEditor extends StatefulWidget {
   const MarkdownCodeEditor({
     super.key,
@@ -322,6 +329,7 @@ class _ToolsState extends State<Tools> {
     } else {
       count++;
       if (!hasSpaceAfterHash) {
+        // If we are adding space then cursor will move one more step forward
         cursorOffset++;
       }
     }
