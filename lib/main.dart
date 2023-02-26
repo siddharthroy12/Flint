@@ -1,22 +1,40 @@
 import 'package:flutter/material.dart';
-// Pages
-import './pages/kanban_page.dart';
-import 'pages/notes_page/notes_page.dart';
-import './pages/timeline_page.dart';
-import './pages/not_found_page.dart';
-// Page transition animation
-import './fade_route_animation.dart';
+import './widgets/sidebar.dart';
+import './widgets/editor.dart';
+import './widgets/notes.dart';
 // Global State
 import 'package:provider/provider.dart';
 import './providers/theme_provider.dart';
 import 'package:flint/providers/user_data_provider.dart';
+// Custom window decoration library
+import 'package:bitsdojo_window/bitsdojo_window.dart';
 
 void main() {
-  runApp(const MyApp());
+  runApp(MyApp());
+
+  doWhenWindowReady(() {
+    const initialSize = Size(600, 450);
+    appWindow.minSize = initialSize;
+    appWindow.size = initialSize;
+    appWindow.alignment = Alignment.center;
+    appWindow.show();
+  });
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+  MyApp({super.key});
+
+  final darkThemeData = ThemeData.from(
+    colorScheme: const ColorScheme.dark(
+      secondaryContainer: Color(0xFF121212), // Sidebar Background Color
+      background: Color(0xFF181818), // Editor Background Color
+      outline: Color(0xFF252525), // Border Color
+      primary: Color(0xFFE7E7E7), // Editor color
+      secondary: Color(0xFF939393), // Icon Color
+      tertiary: Color(0xFF00ACEB), // Accent color
+    ),
+  );
+
   @override
   Widget build(BuildContext context) {
     return MultiProvider(
@@ -27,26 +45,24 @@ class MyApp extends StatelessWidget {
       child: MaterialApp(
         title: 'Flint',
         debugShowCheckedModeBanner: false,
-        initialRoute: '/notes',
-        theme: ThemeData.dark(),
-        onGenerateRoute: (settings) {
-          Widget page;
-          switch (settings.name) {
-            case '/notes':
-              page = const NotesPage();
-              break;
-            case '/kanban':
-              page = const KanbanPage();
-              break;
-            case '/timeline':
-              page = const TimelinePage();
-              break;
-            default:
-              page = const NotFoundPage();
-          }
-          // Page chaning animation
-          return FadeRouteBuilder(page: page, settings: settings);
-        },
+        themeMode: ThemeMode.dark,
+        darkTheme: darkThemeData,
+        home: Builder(builder: (context) {
+          return Scaffold(
+            body: WindowBorder(
+              color: Theme.of(context).colorScheme.outline,
+              child: Row(
+                children: const [
+                  Sidebar(),
+                  Notes(),
+                  Expanded(
+                    child: Editor(),
+                  )
+                ],
+              ),
+            ),
+          );
+        }),
       ),
     );
   }

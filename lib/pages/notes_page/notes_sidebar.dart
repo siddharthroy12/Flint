@@ -3,7 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:flint/providers/theme_provider.dart';
 import 'package:flint/providers/user_data_provider.dart';
 import 'package:flutter/material.dart';
-import '../../common_widgets/resizeable_box.dart';
+import '../../widgets/resizeable_box.dart';
 import 'notes_actions.dart';
 import 'package:flint/lib/filesystem.dart';
 

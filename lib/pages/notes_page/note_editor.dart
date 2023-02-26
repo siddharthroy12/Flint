@@ -191,7 +191,7 @@ class _ToolsState extends State<Tools> {
         pointer--;
       }
 
-      // If pointer at start then move forward
+      // If pointer not at start then move forward
       // Idk why I'm doing this
       if (pointer != 0) {
         pointer++;
@@ -205,7 +205,31 @@ class _ToolsState extends State<Tools> {
 
   // Get the ending positing of the line on which the is cursor is located
   int _getLineEndAtCursor() {
-    return 0;
+    int cursorPosition = widget.textEditingController.selection.base.offset;
+    int endOfCurrentLine = cursorPosition;
+
+    if (widget.textEditingController.text.isNotEmpty) {
+      int pointer = cursorPosition;
+
+      // If the pointer at the end of the text then move the
+      // pointer back otherwise it'll throw range error
+      // because offset is outside the range
+      if (pointer == widget.textEditingController.text.length) {
+        endOfCurrentLine = pointer - 1;
+      } else {
+        if (widget.textEditingController.text[pointer] == '\n') {
+          endOfCurrentLine = pointer;
+        } else {
+          while (pointer != widget.textEditingController.text.length - 1 &&
+              widget.textEditingController.text[pointer] != '\n') {
+            pointer++;
+          }
+          endOfCurrentLine = pointer;
+        }
+      }
+    }
+
+    return endOfCurrentLine;
   }
 
   // Toggle heading numbers eg. (h1, h2, h3, ...)
@@ -316,6 +340,10 @@ class _ToolsState extends State<Tools> {
   void _toggleBlockQuote() {
     int cursorPosition = widget.textEditingController.selection.base.offset;
     int startOfCurrentLine = _getLineStartAtCursor();
+    int endOfCurrentLine = _getLineEndAtCursor();
+
+    widget.textEditingController.selection = TextSelection(
+        baseOffset: startOfCurrentLine, extentOffset: endOfCurrentLine);
 
     if (widget.textEditingController.text.isNotEmpty) {
       if (widget.textEditingController.text[startOfCurrentLine] == '>') {}
@@ -346,7 +374,7 @@ class _ToolsState extends State<Tools> {
           _toggleWrap("~~");
         }
       },
-      {'icon': Icons.format_quote, 'onPressed': () {}},
+      {'icon': Icons.format_quote, 'onPressed': _toggleBlockQuote},
       {'icon': Icons.code, 'onPressed': () {}},
       {'icon': Icons.format_list_bulleted, 'onPressed': () {}},
       {'icon': Icons.format_list_numbered, 'onPressed': () {}},

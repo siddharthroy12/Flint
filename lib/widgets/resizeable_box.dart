@@ -58,7 +58,7 @@ class ResizeableBox extends StatefulWidget {
 
 class _ResizeableBoxState extends State<ResizeableBox> {
   // Size of the handle
-  final double _handleSize = 5;
+  final double _handleSize = 2;
   // Width of the widget
   double _width = 0;
   // Is cursor hovering the handle?
@@ -153,7 +153,9 @@ class _ResizeableBoxState extends State<ResizeableBox> {
           child: AnimatedContainer(
             duration: const Duration(milliseconds: 200),
             decoration: BoxDecoration(
-              color: _hovering ? currentTheme['accent'] : Colors.transparent,
+              color: _hovering
+                  ? Theme.of(context).colorScheme.tertiary
+                  : Colors.transparent,
             ),
             child: SizedBox(
               width: _hovering ? _handleSize : 1,
@@ -172,12 +174,12 @@ class _ResizeableBoxState extends State<ResizeableBox> {
         border: Border(
           right: BorderSide(
             color: widget.direction == Direction.right
-                ? currentTheme['border'] as Color
+                ? Theme.of(context).colorScheme.outline
                 : Colors.transparent,
           ),
           left: BorderSide(
             color: widget.direction == Direction.left
-                ? currentTheme['border'] as Color
+                ? Theme.of(context).colorScheme.outline
                 : Colors.transparent,
           ),
         ),
