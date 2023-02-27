@@ -32,6 +32,7 @@ class MyApp extends StatelessWidget {
       primary: Color(0xFFE7E7E7), // Editor color
       secondary: Color(0xFF939393), // Icon Color
       tertiary: Color(0xFF00ACEB), // Accent color
+      inversePrimary: Color(0xFF5C5C5C), // Less important text Color
     ),
   );
 
@@ -45,6 +46,7 @@ class MyApp extends StatelessWidget {
       child: MaterialApp(
         title: 'Flint',
         debugShowCheckedModeBanner: false,
+        showPerformanceOverlay: false,
         themeMode: ThemeMode.dark,
         darkTheme: darkThemeData,
         home: Builder(builder: (context) {

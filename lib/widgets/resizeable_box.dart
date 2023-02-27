@@ -1,6 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-import '../providers/theme_provider.dart';
 
 enum Direction { left, right }
 
@@ -95,9 +93,6 @@ class _ResizeableBoxState extends State<ResizeableBox> {
 
   @override
   Widget build(BuildContext context) {
-    // The current theme
-    var currentTheme = Provider.of<ThemeProvider>(context).currentTheme;
-
     // Update the width inside controller
     widget.resizeController?.width = _width;
 
@@ -175,12 +170,12 @@ class _ResizeableBoxState extends State<ResizeableBox> {
           right: BorderSide(
             color: widget.direction == Direction.right
                 ? Theme.of(context).colorScheme.outline
-                : Colors.transparent,
+                : Theme.of(context).colorScheme.secondaryContainer,
           ),
           left: BorderSide(
             color: widget.direction == Direction.left
                 ? Theme.of(context).colorScheme.outline
-                : Colors.transparent,
+                : Theme.of(context).colorScheme.secondaryContainer,
           ),
         ),
       ),
