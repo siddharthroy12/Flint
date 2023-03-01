@@ -43,6 +43,7 @@ dependencies:
   markdown_widget: ^2.0.0+1
   bitsdojo_window: ^0.1.5
   uuid: ^3.0.7
+  shared_preferences: ^2.0.18
 
 dev_dependencies:
   flutter_test:

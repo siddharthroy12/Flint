@@ -1,8 +1,15 @@
 import 'package:flutter/material.dart';
 import 'dart:io';
 import '../utils/filesystem.dart';
-import 'dart:convert';
-import 'package:uuid/uuid.dart';
+
+Future<Directory> _getNotebooksDirectory() async {
+  final appDataDirectory = await getAppDataDirectory();
+  final notebooksDirectory =
+      Directory('${appDataDirectory.path}${Platform.pathSeparator}notebooks');
+  notebooksDirectory.create(recursive: true);
+
+  return notebooksDirectory;
+}
 
 // Tags can be assigned to notes
 class Tag extends ChangeNotifier {
@@ -40,11 +47,37 @@ class Note extends ChangeNotifier {
 }
 
 class Notebook extends ChangeNotifier {
-  Notebook({required this.name}) {
+  Notebook({required String name}) {
     // Load notes
+    _name = name;
+    _loadDirectory();
   }
 
-  String name;
+  late String _name;
+
+  late Directory _dir;
+
+  void _loadDirectory() async {
+    final notebooksDir = await _getNotebooksDirectory();
+    final notebookDirectory =
+        Directory('${notebooksDir.path}${Platform.pathSeparator}$_name');
+    notebookDirectory.create(recursive: true);
+
+    _dir = notebookDirectory;
+  }
+
+  set name(String newName) {
+    final separated = _dir.path.split(Platform.pathSeparator);
+    separated[separated.length - 1] = newName;
+    final newPath = separated.join(Platform.pathSeparator);
+    _dir = _dir.renameSync(newPath);
+    _name = newName;
+    notifyListeners();
+  }
+
+  String get name {
+    return _name;
+  }
 
   Map<String, Note> notes = {};
 
@@ -66,15 +99,6 @@ class UserDataProvider extends ChangeNotifier {
   Map<String, Tag> tags = {};
   Map<String, Notebook> notebooks = {};
 
-  Future<Directory> _getNotebooksDirectory() async {
-    final appDataDirectory = await getAppDataDirectory();
-    final notebooksDirectory =
-        Directory('${appDataDirectory.path}${Platform.pathSeparator}notebooks');
-    notebooksDirectory.create(recursive: true);
-
-    return notebooksDirectory;
-  }
-
   Future _loadDataFromFilesystem() async {
     final notebooksDir = await _getNotebooksDirectory();
     final filesAndFolders = notebooksDir.listSync();
@@ -94,11 +118,9 @@ class UserDataProvider extends ChangeNotifier {
 
   // TODO: Add duplicate name check in UI
   addNotebook(String name) async {
+    name = name.trim();
     Notebook newNotebook = Notebook(name: name);
-    final notebooksDir = await _getNotebooksDirectory();
-    final newNotebookDirectory =
-        Directory('${notebooksDir.path}${Platform.pathSeparator}$name');
-    newNotebookDirectory.create(recursive: true);
+
     newNotebook.addListener(() {
       notifyListeners();
     });
@@ -107,7 +129,17 @@ class UserDataProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  void renameNotebook(String oldName, String newName) {
+    final notebook = notebooks[oldName]!;
+    notebook.name = newName;
+    notebooks.remove(oldName);
+    notebooks[newName] = notebook;
+    notifyListeners();
+  }
+
   void deleteNotebook(String name) {
+    notebooks[name]?._dir.delete();
+    notebooks.remove(name);
     notifyListeners();
   }
 
