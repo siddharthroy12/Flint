@@ -13,25 +13,6 @@ class NotebooksAndTags extends StatefulWidget {
 }
 
 class _NotebooksAndTagsState extends State<NotebooksAndTags> {
-  // For creating or updating notebook
-  void showCreateRenameNotebookPopup(Notebook? notebook) {
-    showDialog(
-      context: context,
-      builder: (context) {
-        return NotebookCreateRenameDialog(
-          notebook: notebook,
-        );
-      },
-    );
-  }
-
-  void showDeleteNotebookPopup(Notebook notebook) {
-    showDialog(
-      context: context,
-      builder: (context) => NotebookDeleteDialog(notebook: notebook),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     final notebooks = context.watch<UserDataProvider>().notebooks;
@@ -64,7 +45,12 @@ class _NotebooksAndTagsState extends State<NotebooksAndTags> {
                   color: Theme.of(context).colorScheme.secondary,
                 ),
                 onActionClick: () {
-                  showCreateRenameNotebookPopup(null);
+                  showDialog(
+                    context: context,
+                    builder: (context) {
+                      return const NotebookCreateRenameDialog();
+                    },
+                  );
                 },
               ),
               // Todo Add sorting of notebooks by last used
@@ -74,10 +60,21 @@ class _NotebooksAndTagsState extends State<NotebooksAndTags> {
                       name: e.key,
                       count: e.value.notes.length,
                       onTapDelete: () {
-                        showDeleteNotebookPopup(e.value);
+                        showDialog(
+                          context: context,
+                          builder: (context) {
+                            return NotebookCreateRenameDialog(
+                              notebook: e.value,
+                            );
+                          },
+                        );
                       },
                       onTapRename: () {
-                        showCreateRenameNotebookPopup(e.value);
+                        showDialog(
+                          context: context,
+                          builder: (context) =>
+                              NotebookDeleteDialog(notebook: e.value),
+                        );
                       },
                     ),
                   )
@@ -94,7 +91,12 @@ class _NotebooksAndTagsState extends State<NotebooksAndTags> {
                   size: 20,
                   color: Theme.of(context).colorScheme.secondary,
                 ),
-                onActionClick: () {},
+                onActionClick: () {
+                  showDialog(
+                    context: context,
+                    builder: (context) => const TagCreateAndUpdate(),
+                  );
+                },
               ),
             ],
           ),
