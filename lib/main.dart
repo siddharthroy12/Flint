@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import './widgets/sidebar.dart';
+import 'widgets/sidebar/sidebar.dart';
 import './widgets/editor.dart';
 import './widgets/notes.dart';
 // Global State
