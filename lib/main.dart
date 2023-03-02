@@ -13,9 +13,8 @@ void main() {
   runApp(MyApp());
 
   doWhenWindowReady(() {
-    const initialSize = Size(600, 450);
-    appWindow.minSize = initialSize;
-    appWindow.size = initialSize;
+    appWindow.minSize = const Size(600, 450);
+    appWindow.size = const Size(800, 550);
     appWindow.alignment = Alignment.center;
     appWindow.show();
   });
@@ -26,12 +25,13 @@ class MyApp extends StatelessWidget {
 
   final darkThemeData = ThemeData.from(
     colorScheme: const ColorScheme.dark(
+      error: Color(0xFFED2960),
       secondaryContainer: Color(0xFF121212), // Sidebar Background Color
       background: Color(0xFF181818), // Editor Background Color
       outline: Color(0xFF252525), // Border Color
       primary: Color(0xFFE7E7E7), // Editor color
       secondary: Color(0xFF939393), // Icon Color
-      tertiary: Color(0xFF00ACEB), // Accent color
+      tertiary: Color.fromARGB(255, 12, 94, 202), // Accent color
       inversePrimary: Color(0xFF5C5C5C), // Less important text Color
     ),
   );
