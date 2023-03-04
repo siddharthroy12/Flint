@@ -93,6 +93,7 @@ class NotebookDeleteDialog extends StatelessWidget {
 }
 
 // This is used for creating and renaming notebook
+// If notebook is given then it's for renaming otherwise it's for creating
 class NotebookCreateRenameDialog extends StatefulWidget {
   const NotebookCreateRenameDialog({
     super.key,

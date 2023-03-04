@@ -62,18 +62,18 @@ class _NotebooksAndTagsState extends State<NotebooksAndTags> {
                       onTapDelete: () {
                         showDialog(
                           context: context,
-                          builder: (context) {
-                            return NotebookCreateRenameDialog(
-                              notebook: e.value,
-                            );
-                          },
+                          builder: (context) =>
+                              NotebookDeleteDialog(notebook: e.value),
                         );
                       },
                       onTapRename: () {
                         showDialog(
                           context: context,
-                          builder: (context) =>
-                              NotebookDeleteDialog(notebook: e.value),
+                          builder: (context) {
+                            return NotebookCreateRenameDialog(
+                              notebook: e.value,
+                            );
+                          },
                         );
                       },
                     ),
