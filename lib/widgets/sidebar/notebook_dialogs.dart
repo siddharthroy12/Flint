@@ -6,15 +6,12 @@ import 'package:flutter_colorpicker/flutter_colorpicker.dart';
 // Generate action buttons for dialogs
 // If valid callback is given then value should also be present
 List<Widget> generateDialogActions({
-  String? value,
   required BuildContext context,
   required Function onConfirm,
   required String confirmText,
-  bool Function(String)? isValid,
+  bool isValid = true,
   bool danger = false,
 }) {
-  final confirmEnable = isValid != null ? isValid(value!) : true;
-
   return [
     TextButton(
       onPressed: () {
@@ -29,7 +26,7 @@ List<Widget> generateDialogActions({
       ),
     ),
     FilledButton(
-      onPressed: confirmEnable
+      onPressed: isValid
           ? () {
               Navigator.pop(context);
               onConfirm();
@@ -54,12 +51,14 @@ List<Widget> generateDialogActions({
   ];
 }
 
-class NotebookDeleteDialog extends StatelessWidget {
-  const NotebookDeleteDialog({
+class DeleteDialog extends StatelessWidget {
+  const DeleteDialog({
     super.key,
-    required this.notebook,
+    required this.name,
+    required this.onConfirm,
   });
-  final Notebook notebook;
+  final String name;
+  final Function onConfirm;
 
   @override
   Widget build(BuildContext context) {
@@ -73,7 +72,7 @@ class NotebookDeleteDialog extends StatelessWidget {
         ),
       ),
       content: Text(
-        'Are you sure you want to delete "${notebook.name}"?',
+        'Are you sure you want to delete "$name"?',
         style: TextStyle(
           fontWeight: FontWeight.w300,
           color: Theme.of(context).colorScheme.primary,
@@ -82,18 +81,18 @@ class NotebookDeleteDialog extends StatelessWidget {
       actions: generateDialogActions(
         danger: true,
         context: context,
-        onConfirm: () {
-          Provider.of<UserDataProvider>(context, listen: false)
-              .deleteNotebook(notebook.name);
-        },
+        onConfirm: onConfirm,
         confirmText: 'DELETE',
       ),
     );
   }
 }
 
-// This is used for creating and renaming notebook
-// If notebook is given then it's for renaming otherwise it's for creating
+// TODO: Refactor all the code below this line
+
+/// This is used for creating and renaming notebook
+///
+/// If [notebook] is given then it's for renaming otherwise it's for creating
 class NotebookCreateRenameDialog extends StatefulWidget {
   const NotebookCreateRenameDialog({
     super.key,
@@ -120,14 +119,14 @@ class _NotebookCreateRenameDialogState
       'title': 'Create Notebook',
       'hintText': 'Enter notebook name',
       'initialText': '',
-      'onConfirm': (name) {
+      'onConfirm': () {
         Provider.of<UserDataProvider>(context, listen: false).addNotebook(name);
       },
       'confirmText': 'CREATE',
-      'valid': (name) {
-        final notebooks =
-            Provider.of<UserDataProvider>(context, listen: false).notebooks;
-        return name.trim() != '' && !notebooks.containsKey(name);
+      'valid': () {
+        final userDataProvider =
+            Provider.of<UserDataProvider>(context, listen: false);
+        return name.trim() != '' && !userDataProvider.notebookExists(name);
       }
     };
 
@@ -135,20 +134,16 @@ class _NotebookCreateRenameDialogState
       'title': 'Rename Notebook',
       'hintText': 'Enter new notebook name',
       'initialText': widget.notebook != null ? widget.notebook!.name : '',
-      'onConfirm': (name) {
-        final renameNotebook =
-            Provider.of<UserDataProvider>(context, listen: false)
-                .renameNotebook;
-
-        renameNotebook(widget.notebook!.name, name);
+      'onConfirm': () {
+        widget.notebook!.name = name;
       },
       'confirmText': 'RENAME',
-      'valid': (newName) {
-        final notebooks =
-            Provider.of<UserDataProvider>(context, listen: false).notebooks;
-        return newName.trim() != '' &&
-            newName != widget.notebook!.name &&
-            !notebooks.containsKey(newName);
+      'valid': () {
+        final userDataProvider =
+            Provider.of<UserDataProvider>(context, listen: false);
+        return name.trim() != '' &&
+            name != widget.notebook!.name &&
+            !userDataProvider.notebookExists(name);
       }
     };
     form = widget.notebook == null ? createForm : renameForm;
@@ -159,7 +154,7 @@ class _NotebookCreateRenameDialogState
   Widget build(BuildContext context) {
     final inputBorder = UnderlineInputBorder(
       borderSide: BorderSide(
-          color: form['valid'](name)
+          color: form['valid']()
               ? Theme.of(context).colorScheme.primary
               : Colors.red),
     );
@@ -189,11 +184,10 @@ class _NotebookCreateRenameDialogState
         },
       ),
       actions: generateDialogActions(
-        value: name,
-        isValid: form['valid'],
+        isValid: form['valid'](),
         context: context,
         onConfirm: () {
-          form['onConfirm'](name);
+          form['onConfirm']();
         },
         confirmText: form['confirmText'],
       ),
@@ -201,18 +195,22 @@ class _NotebookCreateRenameDialogState
   }
 }
 
-class TagCreateAndUpdate extends StatefulWidget {
-  const TagCreateAndUpdate({
+/// This is used for creating and updating tag
+///
+/// If [tag] is given then it's for updating else it's for creating
+class TagCreateAndUpdateDialog extends StatefulWidget {
+  const TagCreateAndUpdateDialog({
     super.key,
     this.tag,
   });
   final Tag? tag;
 
   @override
-  State<TagCreateAndUpdate> createState() => _TagCreateAndUpdateState();
+  State<TagCreateAndUpdateDialog> createState() =>
+      _TagCreateAndUpdateDialogState();
 }
 
-class _TagCreateAndUpdateState extends State<TagCreateAndUpdate> {
+class _TagCreateAndUpdateDialogState extends State<TagCreateAndUpdateDialog> {
   String name = '';
   Color color = Colors.blue;
   late TextEditingController _controller;
@@ -226,22 +224,34 @@ class _TagCreateAndUpdateState extends State<TagCreateAndUpdate> {
       'hintText': 'Enter tag name',
       'initialText': '',
       'initialColor': Colors.blue,
-      'onConfirm': (name) {},
+      'onConfirm': () {
+        Provider.of<UserDataProvider>(context, listen: false)
+            .addTag(name, color);
+      },
       'confirmText': 'CREATE',
-      'valid': (name) {
-        return true;
+      'valid': () {
+        final userDataProvider =
+            Provider.of<UserDataProvider>(context, listen: false);
+        return name.trim() != '' && !userDataProvider.tagExists(name);
       }
     };
 
     final renameForm = {
       'title': 'Update Tag',
       'hintText': 'Update Tag name',
-      'initialText': '',
-      'initialColor': Colors.blue,
-      'onConfirm': (name) {},
+      'initialText': widget.tag?.name,
+      'initialColor': widget.tag?.color,
+      'onConfirm': () {
+        widget.tag!.name = name;
+        widget.tag!.color = color;
+      },
       'confirmText': 'UPDATE',
-      'valid': (newName) {
-        return true;
+      'valid': () {
+        final userDataProvider =
+            Provider.of<UserDataProvider>(context, listen: false);
+        return name.trim() != '' &&
+            name != widget.tag!.name &&
+            !userDataProvider.tagExists(name);
       }
     };
     form = widget.tag == null ? createForm : renameForm;
@@ -253,7 +263,7 @@ class _TagCreateAndUpdateState extends State<TagCreateAndUpdate> {
   Widget build(BuildContext context) {
     final inputBorder = UnderlineInputBorder(
       borderSide: BorderSide(
-          color: form['valid'](name)
+          color: form['valid']()
               ? Theme.of(context).colorScheme.primary
               : Colors.red),
     );
@@ -333,16 +343,19 @@ class _TagCreateAndUpdateState extends State<TagCreateAndUpdate> {
               );
             },
             pickerColor: form['initialColor'],
-            onColorChanged: (_) {},
+            onColorChanged: (newColor) {
+              setState(() {
+                color = newColor;
+              });
+            },
           )
         ],
       ),
       actions: generateDialogActions(
-        value: name,
-        isValid: form['valid'],
+        isValid: form['valid'](),
         context: context,
         onConfirm: () {
-          form['onConfirm'](name);
+          form['onConfirm']();
         },
         confirmText: form['confirmText'],
       ),

@@ -54,7 +54,7 @@ class _SidebarState extends State<Sidebar> {
                 ),
               ),
             ),
-            const NotebooksAndTags()
+            const Expanded(child: NotebooksAndTags())
           ],
         ),
       ),

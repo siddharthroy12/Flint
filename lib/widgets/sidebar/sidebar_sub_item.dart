@@ -35,7 +35,20 @@ class _SidebarSubItemState extends State<SidebarSubItem> {
         padding: const EdgeInsets.all(8.0),
         child: Row(
           children: [
-            const SizedBox(width: 40),
+            const SizedBox(
+              width: 34,
+            ),
+            Container(
+              width: widget.color == null ? 0 : 10,
+              height: 10,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(50),
+                color: widget.color,
+              ),
+            ),
+            const SizedBox(
+              width: 10,
+            ),
             Flexible(
               fit: FlexFit.tight,
               child: Text(
@@ -70,9 +83,9 @@ class _SidebarSubItemState extends State<SidebarSubItem> {
                                 () => widget.onTapRename(),
                               );
                             },
-                            child: const Text(
-                              'Rename',
-                              style: TextStyle(fontSize: 14),
+                            child: Text(
+                              widget.color != null ? 'Update' : 'Rename',
+                              style: const TextStyle(fontSize: 14),
                             ),
                           ),
                           PopupMenuItem(

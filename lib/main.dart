@@ -34,6 +34,10 @@ class MyApp extends StatelessWidget {
       tertiary: Color.fromARGB(255, 12, 94, 202), // Accent color
       inversePrimary: Color(0xFF5C5C5C), // Less important text Color
     ),
+  ).copyWith(
+    scrollbarTheme: ScrollbarThemeData(
+      thickness: MaterialStateProperty.all(5),
+    ),
   );
 
   @override

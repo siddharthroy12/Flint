@@ -24,12 +24,13 @@ class Tag extends ChangeNotifier {
   Tag({required String name, required Color color}) {
     _name = name;
     _color = color;
-    _tagsFileContent[name] = {"color": color.toHex()};
+    _tagsFileContent[name] = {"color": colorToHex(color)};
     _updateTagFile();
   }
 
   /// JSON file where tags are stored
-  /// All tags share the same json file
+  ///
+  /// All tags are stored in the same JSON file
   static File? _tagsFile;
 
   /// Content of the JSON file as a dart object
@@ -45,7 +46,7 @@ class Tag extends ChangeNotifier {
   ///   }
   /// }
   /// ```
-  static Map<String, Map<String, String>> _tagsFileContent = {};
+  static Map<String, dynamic> _tagsFileContent = {};
 
   /// Write the [_tagsFileContent] to the file;
   _updateTagFile() async {
@@ -62,7 +63,7 @@ class Tag extends ChangeNotifier {
   set name(String newName) {
     _tagsFileContent.remove(_name);
     _name = newName;
-    _tagsFileContent[_name] = {"color": color.toHex()};
+    _tagsFileContent[_name] = {"color": colorToHex(color)};
     _updateTagFile();
     notifyListeners();
   }
@@ -76,7 +77,7 @@ class Tag extends ChangeNotifier {
 
   set color(Color newColor) {
     _color = newColor;
-    _tagsFileContent[_name] = {"color": color.toHex()};
+    _tagsFileContent[_name] = {"color": colorToHex(color)};
     _updateTagFile();
     notifyListeners();
   }
@@ -238,7 +239,7 @@ class Notebook extends ChangeNotifier {
 /// Global state for managing user's notes and settings
 class UserDataProvider extends ChangeNotifier {
   UserDataProvider() {
-    // Loads notebooks and notes
+    // Loads notebooks and tags
     _loadDataFromFilesystem();
   }
 
@@ -275,7 +276,6 @@ class UserDataProvider extends ChangeNotifier {
       if (fileOrFolder is Directory) {
         final folder = fileOrFolder;
         _addNotebook(Notebook(folder));
-        addNotebook(folder.path.split(Platform.pathSeparator).last);
       }
     }
 
@@ -289,25 +289,24 @@ class UserDataProvider extends ChangeNotifier {
       await Tag._tagsFile!.writeAsString(tagsFileContent);
     }
     Tag._tagsFileContent = jsonDecode(tagsFileContent);
-
     Tag._tagsFileContent.forEach((key, value) {
-      addTag(key, colorFromHex(value['color']!)!);
+      addTag(key, colorFromHex(value['color']!, enableAlpha: true)!);
     });
   }
 
-  /// Create a new [Notebook] and add it to the list
+  /// Creates a new [Notebook] and add it to the list
   addNotebook(String name) async {
     name = name.trim();
     final notebooksDir = await _getNotebooksDirectory();
     final notebookDir =
         Directory('${notebooksDir.path}${Platform.pathSeparator}$name');
     // Create the notebook directory if doesn't exists
-    notebookDir.create(recursive: true);
+    await notebookDir.create(recursive: true);
 
     _addNotebook(Notebook(notebookDir));
   }
 
-  /// Whether a notebook with the name [name] exists or not
+  /// Whether a notebook with the name [name] exists
   bool notebookExists(String name) {
     return notebooks.indexWhere((notebook) => notebook.name == name) != -1;
   }
@@ -317,6 +316,7 @@ class UserDataProvider extends ChangeNotifier {
     notebook.addListener(() {
       notifyListeners();
     });
+    notebooks.add(notebook);
     notifyListeners();
   }
 
@@ -338,11 +338,16 @@ class UserDataProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  /// Create a new [Tag] and add it to the list
+  /// Creates a new [Tag] and add it to the list
   void addTag(String name, Color color) {
     Tag tag = Tag(name: name, color: color);
     _addTag(tag);
     notifyListeners();
+  }
+
+  /// Whether a tag with the name [name] exists
+  bool tagExists(String name) {
+    return tags.indexWhere((tag) => tag.name == name) != -1;
   }
 
   // Add [tag] to the list and attach a listener to it
